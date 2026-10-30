@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF3DC">
+<title>Cycle Matrix</title>
+<style>
+:root{--bg:#FBF3DC;--pn:#FFFBEF;--soft:#F5EACB;--ink:#1E3A28;--mu:#5C6A55;--ac:#B4690E;--onac:#fff;--lf:#4C7A46;--ln:#E6D9B5;--warn:#A4471C;
+ --sh:0 1px 0 rgba(30,58,40,.05),0 12px 26px -16px rgba(30,58,40,.42);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13221A;--pn:#1C3025;--soft:#243B2D;--ink:#EDF3E8;--mu:#9DB1A3;--ac:#E8A94A;--onac:#1B1406;--lf:#7BC48A;--ln:#2C4636;--warn:#F0A67F;--sh:0 1px 0 rgba(0,0,0,.2),0 12px 26px -16px rgba(0,0,0,.7);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13221A;--pn:#1C3025;--soft:#243B2D;--ink:#EDF3E8;--mu:#9DB1A3;--ac:#E8A94A;--onac:#1B1406;--lf:#7BC48A;--ln:#2C4636;--warn:#F0A67F;--sh:0 1px 0 rgba(0,0,0,.2),0 12px 26px -16px rgba(0,0,0,.7);color-scheme:dark}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded","Nunito","Avenir Next",Seravek,"Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.4}
+main{max-width:560px;margin:0 auto;padding:12px 14px 104px}
+h2{margin:0 0 6px;font-size:21px;font-weight:800;letter-spacing:-.01em}h3{margin:0;font-size:16px;font-weight:800}p{margin:8px 0}b,strong{font-weight:800}
+.mu{color:var(--mu);font-size:14px}.sm{font-size:13px}.mt{margin-top:8px}.good{color:var(--lf)}.bad{color:var(--warn)}
+.card{background:var(--pn);border:2px solid var(--ln);border-radius:22px;padding:14px 16px;margin-top:12px;box-shadow:var(--sh)}
+.card.warn{border-color:#C9A34E;background:linear-gradient(0deg,rgba(201,163,78,.12),rgba(201,163,78,.12)),var(--pn)}.card.alert{border-color:var(--warn);background:linear-gradient(0deg,rgba(164,71,28,.12),rgba(164,71,28,.12)),var(--pn)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sb{justify-content:space-between}
+input,select{font:inherit;background:var(--bg);color:var(--ink);border:2px solid var(--ln);border-radius:13px;padding:9px 11px;width:100%;min-width:0}
+label{display:block;flex:1;min-width:100px;font-size:13px;color:var(--mu)}label input,label select{margin-top:3px;font-size:16px}
+.btn{background:var(--ac);color:var(--onac);border:0;border-radius:15px;padding:11px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:44px}.btn.g{background:var(--pn);color:var(--ink);border:2px solid var(--ln)}.btn:disabled{opacity:.45}
+.chip{background:var(--bg);border:2px solid var(--ln);border-radius:22px;padding:6px 12px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;min-height:36px}.chip.on{border-color:var(--ac);background:var(--soft);font-weight:800}.chip:disabled{opacity:.4}.chip.stp{min-width:44px;min-height:44px;font-size:22px;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.bar{height:13px;border-radius:9px;background:var(--ln);overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;border-radius:9px;background:var(--lf);transition:width .5s}.bar.hi i{background:#D9622B}.bar.wn i{background:#8FA3B5}.bar.ok i{background:var(--lf)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.tiles.t2{grid-template-columns:repeat(2,1fr)}
+.tile{background:var(--soft);border-radius:16px;padding:9px 10px;min-width:0}.tile b{display:block;font-size:19px;line-height:1.1;font-weight:800}.tile span{font-size:12px;color:var(--mu);line-height:1.2;display:block;margin-top:2px}
+.big{font-size:34px;font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.note{background:var(--soft);border-radius:14px;padding:9px 12px;font-size:14px;margin-top:8px}.warnbox{background:rgba(164,71,28,.11);border:2px solid rgba(164,71,28,.35);border-radius:14px;padding:9px 12px;font-size:14px;margin-top:8px}
+.coach{background:var(--pn);border:2px solid var(--ln);border-radius:16px;padding:10px 14px;margin-top:4px;font-weight:700;box-shadow:var(--sh)}
+.meal{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--ln)}.meal:last-child{border-bottom:0}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}.tbl th{text-align:left;color:var(--mu);font-weight:700;font-size:12px;padding:4px}.tbl td{padding:8px 4px;border-top:1px dashed var(--ln)}.tbl th:nth-child(n+2),.tbl td:nth-child(n+2){text-align:right}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.lg{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;margin:3px 12px 3px 0}.lg i{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
+.csvbox{width:100%;height:120px;font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--ink);border:2px solid var(--ln);border-radius:12px;padding:8px;margin-top:8px}
+details.card summary{cursor:pointer;font-weight:800}
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.pt{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--bg);border:2px solid var(--ln);border-radius:18px;padding:12px 6px;font:inherit;color:var(--ink);cursor:pointer;min-height:96px}.pt .pi{font-size:30px;line-height:1.1}.pt.on{border-color:var(--lf);background:rgba(76,122,70,.16)}.pt .tk{position:absolute;top:6px;right:8px;font-style:normal;font-weight:800;color:var(--lf)}
+.cm{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--bg);border:2px solid var(--ln);border-radius:16px;padding:8px 2px;font:inherit;color:var(--ink);cursor:pointer;min-width:0;min-height:62px}.cm.on{border-color:var(--ac);background:var(--soft);font-weight:800}
+.strip{display:flex;gap:2px;margin-top:8px}.sq{flex:1;height:14px;border-radius:3px;background:var(--ln);max-width:18px}.sq.on{background:var(--lf)}.sq.no{opacity:.35}
+.heat{display:flex;gap:4px;margin-top:10px}.hcol{display:flex;flex-direction:column;gap:4px;flex:1}.hc{display:block;aspect-ratio:1;border-radius:4px;background:var(--ln)}.hc.fut{opacity:.25}.hc.no{opacity:.35}.hc.l1{background:#C9DDB9}.hc.l2{background:#9BC48B}.hc.l3{background:#6FA663}.hc.l4{background:#3F7A3B}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--pn);border-top:2px solid var(--ln);padding:6px 3px calc(6px + env(safe-area-inset-bottom,0px));z-index:8}
+nav button{flex:1;min-width:0;background:none;border:0;font:inherit;font-size:10px;letter-spacing:-.2px;color:var(--mu);padding:4px 0;cursor:pointer;min-height:48px;border-radius:14px}nav button.on{color:var(--ac);font-weight:800;background:var(--soft)}nav span{display:block;font-size:21px;line-height:1.2}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.gl{display:flex;justify-content:space-between;gap:8px}
+.rt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--ln)}.rn{font-size:14px;flex:1;min-width:0}
+.rb{display:flex;gap:4px;flex:none}.rb button{width:34px;height:36px;border-radius:10px;border:2px solid var(--ln);background:var(--bg);color:var(--ink);font:inherit;font-weight:700;cursor:pointer;padding:0}
+.rb button.on{color:#fff;border-color:transparent}.rb .s1{background:#7FA67A}.rb .s2{background:#9CAF6A}.rb .s3{background:#C9A34E}.rb .s4{background:#D98A3D}.rb .s5{background:#C9603A}.rb .s6{background:#A83A3A}
+.hm{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}.hm .bar{height:9px;margin:3px 0}
+.pill{display:inline-flex;align-items:center;gap:4px;border:2px solid var(--ln);border-radius:20px;padding:3px 10px;font-size:12.5px;font-weight:700;margin:3px 4px 3px 0;background:var(--bg)}.pill.yes{border-color:#8E6BBF;background:rgba(142,107,191,.16)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;text-align:center}
+.cd{position:relative;aspect-ratio:1;border:0;border-radius:10px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;background:color-mix(in srgb,var(--pc) 22%,var(--pn));padding:0}
+.cd.out{opacity:.4}.cd.td{outline:2.5px solid var(--ink);outline-offset:-2px}.cd.bl{background:color-mix(in srgb,#C2477A 55%,var(--pn));color:#fff}
+.cd .md{position:absolute;bottom:4px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%}.md.m1{background:#A83A3A}.md.m2{background:#D98A3D}.md.m3{background:#C9A34E}.md.m4{background:#7FA67A}.md.m5{background:#3F7A3B}
+.cd .st{position:absolute;top:1px;right:4px;font-size:9px;color:#C2477A}.cd.bl .st{color:#fff}
+.mx{overflow-x:auto;margin-top:10px}.mxt{border-collapse:separate;border-spacing:2px;font-size:11.5px}.mxt th{font-size:10.5px;color:var(--mu);padding:2px;min-width:28px}.mxt td{text-align:center;padding:5px 2px;border-radius:5px;background:var(--soft);min-width:28px}
+.mxt td:first-child{text-align:left;position:sticky;left:0;background:var(--pn);min-width:120px;max-width:140px;font-size:12px;z-index:1}
+.mxt td.h1{background:#DDEBD8;color:#1E3A28}.mxt td.h2{background:#E6E7BE;color:#33361A}.mxt td.h3{background:#EED9A0;color:#4A3408}.mxt td.h4{background:#E9B27C;color:#4A2208}.mxt td.h5{background:#D9855E;color:#fff}.mxt td.h6{background:#A83A3A;color:#fff}
+.mxt.tg td:not(:first-child){min-width:11px;width:11px;height:16px;padding:0;border-radius:2px;font-size:8px;color:#fff}.mxt.tg th{min-width:11px;font-size:8.5px;line-height:1.05;padding:0 0 2px}.mxt.tg{border-spacing:1px}
+.mxt td.yb{background:#4C9F70}.mxt td.yn{background:var(--soft)}.mxt td.fl1{background:#E8B4C8}.mxt td.fl2{background:#D886A6}.mxt td.fl3{background:#C2477A}.mxt td.fl4{background:#8E2A55}
+.mxt td.q0{background:#E3E8EE}.mxt td.q1{background:#C3D2E2}.mxt td.q2{background:#9DB4CF}.mxt td.q3{background:#6F92BA}.mxt td.q4{background:#3E6A9A}.mxt td.est{background-image:radial-gradient(rgba(0,0,0,.35) 1px,transparent 1.2px);background-size:4px 4px}
+.lnk{background:none;border:0;font:inherit;color:var(--ink);text-align:left;padding:0;cursor:pointer;font-weight:700;font-size:12px}
+.tbl.cp{font-size:12.5px}.tbl.cp td,.tbl.cp th{padding:6px 3px}
+@media print{nav,.noprint,.coach{display:none!important}body{background:#fff;color:#000}main{padding:0;max-width:none}.card{box-shadow:none;border:0}}
+</style></head><body>
+<main id="app"></main><nav id="nav" aria-label="Main"></nav>
+<script>
+'use strict';
+/* =====================================================================
+   CYCLE MATRIX
+   A period, mood and PMDD symptom tracker that looks for patterns: across your cycle, and between food groups and how you feel.
+   One file, vanilla JS, works offline. Your data stays in this browser.
+
+   DAILY CHECK-IN: period flow, mood, symptoms on a 1-6 scale (the scale used for PMDD tracking), which food groups you had, a few other things.
+   SECTIONS 1 Config · 2 Utilities · 3 State · 4 Cycles & prediction · 5 Phases · 6 Hormone model · 7 Daily scores
+            8 PMDD pattern check (C-PASS method) · 9 Food associations · 10 Charts · 11 Views · 12 Actions · 13 Export/import · 14 Boot
+   NOT A DIAGNOSIS. It organises your own ratings the way a clinician would want to see them.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. CONFIG
+   --------------------------------------------------------------------- */
+const APP = 'Cycle Matrix', KEY = 'cm_v1';
+/* Symptom items, rated 1 (not at all) to 6 (extreme). Grouped into the 11 DSM-5 PMDD symptom areas (d), plus 3 "got in the way" items. */
+const ITEMS = [
+  { k: 'dep', n: 'Low, sad or down', d: 'B3', g: 'emo' }, { k: 'hop', n: 'Hopeless', d: 'B3', g: 'emo' }, { k: 'wor', n: 'Worthless or guilty', d: 'B3', g: 'emo' },
+  { k: 'anx', n: 'Anxious, tense or on edge', d: 'B4', g: 'emo' }, { k: 'swg', n: 'Mood swings or suddenly tearful', d: 'B1', g: 'emo' }, { k: 'rej', n: 'Sensitive to rejection, easily hurt', d: 'B1', g: 'emo' },
+  { k: 'irr', n: 'Irritable or angry', d: 'B2', g: 'emo' }, { k: 'con', n: 'Conflict or friction with people', d: 'B2', g: 'emo' },
+  { k: 'int', n: 'Less interest in usual things', d: 'C1', g: 'beh' }, { k: 'foc', n: 'Hard to concentrate', d: 'C2', g: 'beh' }, { k: 'tir', n: 'Tired or low on energy', d: 'C3', g: 'beh' },
+  { k: 'app', n: 'Ate more than usual', d: 'C4', g: 'beh' }, { k: 'cra', n: 'Cravings for particular foods', d: 'C4', g: 'beh' }, { k: 'hyp', n: 'Slept more, hard to get up', d: 'C5', g: 'beh' },
+  { k: 'ins', n: 'Trouble falling or staying asleep', d: 'C5', g: 'beh' }, { k: 'ovw', n: 'Overwhelmed, unable to cope', d: 'C6', g: 'beh' }, { k: 'ctl', n: 'Felt out of control', d: 'C6', g: 'beh' },
+  { k: 'brs', n: 'Breast tenderness or swelling', d: 'C7', g: 'phy' }, { k: 'blt', n: 'Bloating or weight gain', d: 'C7', g: 'phy' }, { k: 'hed', n: 'Headache', d: 'C7', g: 'phy' }, { k: 'pai', n: 'Joint or muscle pain', d: 'C7', g: 'phy' },
+  { k: 'wrk', n: 'Got in the way of work or study', d: 'I', g: 'imp' }, { k: 'soc', n: 'Got in the way of hobbies or social life', d: 'I', g: 'imp' }, { k: 'rel', n: 'Got in the way of relationships', d: 'I', g: 'imp' }
+];
+/* Not part of the PMDD scoring: period pain, a wider pain-and-body set, and the safety question. */
+const EXTRA = [{ k: 'crm', n: 'Cramps or period pain', g: 'phy' },
+  { k: 'pan', n: 'Pain overall', g: 'fib' }, { k: 'stf', n: 'Stiffness (on waking or after sitting)', g: 'fib' }, { k: 'tch', n: 'Sore to the touch, light pressure hurts', g: 'fib' },
+  { k: 'tng', n: 'Tingling, numbness or burning', g: 'fib' }, { k: 'sen', n: 'Sensitive to noise, light, clothes or temperature', g: 'fib' }, { k: 'unr', n: 'Woke up unrefreshed', g: 'fib' },
+  { k: 'exh', n: 'Worn out after normal activity', g: 'fib' }, { k: 'mem', n: 'Memory slips or trouble finding words', g: 'fib' }, { k: 'gut', n: 'Stomach or bowel trouble', g: 'fib' }, { k: 'rls', n: 'Restless or twitchy legs', g: 'fib' },
+  { k: 'sui', n: 'Thoughts of self-harm or not wanting to be here', g: 'safe' }];
+const FIB = EXTRA.filter(i => i.g === 'fib');
+/* Where it hurt today. The number of areas shows how widespread pain is. */
+const REGIONS = [['neck', 'Neck'], ['jaw', 'Jaw'], ['head', 'Head'], ['shoulders', 'Shoulders'], ['upperback', 'Upper back'], ['lowerback', 'Lower back'], ['chest', 'Chest'], ['arms', 'Arms'], ['hands', 'Hands, wrists'], ['stomach', 'Stomach'], ['hips', 'Hips'], ['thighs', 'Thighs'], ['knees', 'Knees'], ['calves', 'Calves, shins'], ['feet', 'Feet, ankles']];
+const QUICK = ['anx', 'irr', 'dep', 'swg', 'tir'];
+const GROUPS = { emo: 'Mood and feelings', beh: 'Energy, sleep, appetite, coping', phy: 'Physical', fib: 'Pain, body and senses', imp: 'Impact on your day', safe: 'Safety' };
+const DOMAINS = { B1: 'Mood swings, rejection sensitivity', B2: 'Irritability, conflict', B3: 'Low mood, hopelessness', B4: 'Anxiety, tension', C1: 'Less interest', C2: 'Concentration', C3: 'Fatigue', C4: 'Appetite, cravings', C5: 'Sleep', C6: 'Overwhelmed, out of control', C7: 'Physical symptoms' };
+const SCALE = ['Not at all', 'Minimal', 'Mild', 'Moderate', 'Severe', 'Extreme'];
+const MOODS = [['😣', 'Very low'], ['😕', 'Low'], ['😐', 'Okay'], ['🙂', 'Good'], ['😄', 'Great']];
+const FLOW = ['None', 'Spotting', 'Light', 'Medium', 'Heavy'];
+const DEFAULT_FOODS = [
+  { id: 'f_caf', n: 'Caffeine', i: '☕' }, { id: 'f_alc', n: 'Alcohol', i: '🍷' }, { id: 'f_sug', n: 'Sugar and sweets', i: '🍬' }, { id: 'f_cho', n: 'Chocolate', i: '🍫' },
+  { id: 'f_ref', n: 'Refined carbs', i: '🍞' }, { id: 'f_who', n: 'Whole grains', i: '🌾' }, { id: 'f_veg', n: 'Vegetables', i: '🥦' }, { id: 'f_fru', n: 'Fruit', i: '🍎' },
+  { id: 'f_dai', n: 'Dairy', i: '🧀' }, { id: 'f_red', n: 'Red meat', i: '🥩' }, { id: 'f_fsh', n: 'Oily fish', i: '🐟' }, { id: 'f_nut', n: 'Nuts and seeds', i: '🥜' },
+  { id: 'f_leg', n: 'Beans and lentils', i: '🫘' }, { id: 'f_sal', n: 'Salty or processed', i: '🧂' }, { id: 'f_fry', n: 'Fried or fast food', i: '🍟' }, { id: 'f_spi', n: 'Spicy food', i: '🌶️' }];
+/* Medication: a daily dose per medicine. step = the dose change the analysis reports per (e.g. per 25 mg). */
+const DEFAULT_MEDS = [{ id: 'm_ser', n: 'Sertraline', u: 'mg', step: 25 }];
+const KNOWN_MEDS = ['sertraline', 'fluoxetine', 'citalopram', 'escitalopram', 'paroxetine', 'fluvoxamine', 'venlafaxine', 'duloxetine', 'gabapentin', 'pregabalin', 'propranolol', 'drospirenone', 'naproxen', 'ibuprofen'];
+const DEFAULT_TAGS = [{ id: 't_ex', n: 'Exercised', i: '🏃' }, { id: 't_bs', n: 'Slept badly', i: '😴' }, { id: 't_st', n: 'Stressful day', i: '⚡' }, { id: 't_pk', n: 'Took painkillers', i: '💊' }];
+const PHASES = { men: { n: 'Period', c: '#C2477A' }, fol: { n: 'Follicular', c: '#4C9F70' }, ovu: { n: 'Ovulation (est.)', c: '#D9A400' }, lut: { n: 'Luteal', c: '#5B7FA6' }, pre: { n: 'Premenstrual week', c: '#8E6BBF' } };
+const PHASE_ORDER = ['men', 'fol', 'ovu', 'lut', 'pre'];
+const DEF = { cycle: 28, luteal: 14, period: 5 };
+/* C-PASS (Eisenlohr-Moul et al. 2017): premenstrual week = days -7..-1, postmenstrual week = days 4..10 after onset.
+   An item meets the pattern when: premenstrual mean - postmenstrual mean >= 30% of the range of the scale you use for it,
+   no postmenstrual day above 3, and at least 2 premenstrual days at 4 (moderate) or more. */
+const CPASS = { elev: 30, clearMax: 3, sevMin: 4, sevDays: 2, minDays: 4 };
+const SAFE_SHOW = 3;          // show the support card when the safety item is rated this or higher
+
+/* ---------------------------------------------------------------------
+   2. UTILITIES
+   --------------------------------------------------------------------- */
+const $ = s => document.querySelector(s);
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const fmt = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const ds = o => { const d = new Date(); d.setDate(d.getDate() + o); return fmt(d); };
+const sh = (dt, n) => { const d = new Date(dt + 'T12:00:00'); d.setDate(d.getDate() + n); return fmt(d); };
+const dd = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const f1 = n => (+n).toFixed(1), f2 = n => (+n).toFixed(2), pc = x => Math.round(x * 100);
+const sg = (n, dp = 1) => { const v = +(+n).toFixed(dp); return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(dp); };
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const svar = a => { if (a.length < 2) return null; const m = mean(a); return a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1); };
+const sdv = a => { const v = svar(a); return v == null ? null : Math.sqrt(v); };
+const median = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const pretty = dt => new Date(dt + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+const prettyY = dt => new Date(dt + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const shortD = dt => new Date(dt + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const monday = dt => { const d = new Date(dt + 'T12:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return fmt(d); };
+
+/* ---------------------------------------------------------------------
+   3. STATE
+   S = { v, cfg:{name, luteal, defCycle, defPeriod, hc}, foods:[{id,n,i}], tags:[{id,n,i}], meds:[{id,n,u,step}], starts:['YYYY-MM-DD'],
+         days:{ date:{ fl:0-4, md:1-5|null, r:{item:1-6}, fd:{foodId:1}|null (null = food not logged), tg:{tagId:1}, sl:hours|null, nt:'',
+                       dz:{medId:dose} (0 = took none), ev:['Sertraline increased'], pl:{region:1}|null (where it hurt; null = not logged), im:1 if the ratings were estimated from imported notes } }, created, lastExport }
+   --------------------------------------------------------------------- */
+let S = null, V = 'today', TD = ds(0), MSG = '', RST = 0, DT = false, IMPQ = null, IMPERR = '', CSVT = '', DNOTE = '', SERR = '', ALL = false, PQ = null, PT = '', _c = {};
+function save() { _c = {}; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+function newState() { return { v: 1, cfg: { name: '', luteal: DEF.luteal, defCycle: DEF.cycle, defPeriod: DEF.period, hc: false }, foods: DEFAULT_FOODS.map(x => Object.assign({}, x)), tags: DEFAULT_TAGS.map(x => Object.assign({}, x)), meds: DEFAULT_MEDS.map(x => Object.assign({}, x)), starts: [], days: {}, created: ds(0), lastExport: null }; }
+const ALLK = ITEMS.map(i => i.k).concat(EXTRA.map(i => i.k));
+function migrate(raw) {
+  if (!raw || typeof raw !== 'object' || !raw.cfg) return null; const n0 = x => isFinite(+x) ? +x : 0, n = newState(), okd = k => /^\d{4}-\d{2}-\d{2}$/.test(k);
+  n.cfg = { name: String(raw.cfg.name || '').slice(0, 24), luteal: clamp(Math.round(n0(raw.cfg.luteal)) || 14, 9, 17), defCycle: clamp(Math.round(n0(raw.cfg.defCycle)) || 28, 18, 50), defPeriod: clamp(Math.round(n0(raw.cfg.defPeriod)) || 5, 1, 10), hc: !!raw.cfg.hc };
+  const lst = (a, d) => Array.isArray(a) && a.length ? a.filter(x => x && x.id && x.n).slice(0, 30).map(x => ({ id: String(x.id), n: String(x.n).slice(0, 26), i: String(x.i || '•').slice(0, 4) })) : d;
+  n.foods = lst(raw.foods, n.foods); n.tags = lst(raw.tags, n.tags);
+  if (Array.isArray(raw.meds)) n.meds = raw.meds.filter(x => x && x.id && x.n).slice(0, 8).map(x => ({ id: String(x.id), n: String(x.n).slice(0, 26), u: String(x.u || 'mg').slice(0, 6), step: Math.max(0.1, n0(x.step) || 25) })); n.created = raw.created || ds(0); n.lastExport = raw.lastExport || null;
+  n.starts = [...new Set((Array.isArray(raw.starts) ? raw.starts : []).filter(okd))].sort();
+  const fids = n.foods.map(f => f.id), tids = n.tags.map(t => t.id), mids = n.meds.map(m => m.id);
+  Object.keys(raw.days && typeof raw.days === 'object' ? raw.days : {}).forEach(k => { if (!okd(k)) return; const d = raw.days[k] || {}, o = { fl: clamp(Math.round(n0(d.fl)), 0, 4), md: d.md != null && n0(d.md) >= 1 && n0(d.md) <= 5 ? Math.round(n0(d.md)) : null, r: {}, fd: null, tg: {}, sl: d.sl != null && d.sl !== '' && n0(d.sl) > 0 && n0(d.sl) <= 24 ? n0(d.sl) : null, nt: String(d.nt || '').slice(0, 400), dz: {}, ev: (Array.isArray(d.ev) ? d.ev : []).map(e => String(e).slice(0, 60)).filter(Boolean).slice(0, 6), im: d.im ? 1 : 0, pl: null };
+    if (d.pl && typeof d.pl === 'object') { o.pl = {}; Object.keys(d.pl).forEach(k => { if (REGIONS.some(r => r[0] === k) && d.pl[k]) o.pl[k] = 1; }); }
+    Object.keys(d.dz && typeof d.dz === 'object' ? d.dz : {}).forEach(i => { const v = +d.dz[i]; if (mids.includes(i) && d.dz[i] !== '' && d.dz[i] != null && isFinite(v) && v >= 0 && v <= 5000) o.dz[i] = v; });
+    Object.keys(d.r && typeof d.r === 'object' ? d.r : {}).forEach(i => { const v = Math.round(n0(d.r[i])); if (ALLK.includes(i) && v >= 1 && v <= 6) o.r[i] = v; });
+    if (d.fd && typeof d.fd === 'object') { o.fd = {}; Object.keys(d.fd).forEach(i => { if (fids.includes(i) && d.fd[i]) o.fd[i] = 1; }); }
+    Object.keys(d.tg && typeof d.tg === 'object' ? d.tg : {}).forEach(i => { if (tids.includes(i) && d.tg[i]) o.tg[i] = 1; });
+    n.days[k] = o; });
+  return n;
+}
+function load() { try { return migrate(JSON.parse(localStorage.getItem(KEY))); } catch (e) { return null; } }
+const dayOf = d => S.days[d] || (S.days[d] = { fl: 0, md: null, r: {}, fd: null, tg: {}, sl: null, nt: '', dz: {}, ev: [], im: 0, pl: null });
+const rOf = (d, k) => S.days[d] && S.days[d].r[k] != null ? S.days[d].r[k] : null;
+const checkedIn = d => { const x = S.days[d]; return !!(x && (x.md != null || Object.keys(x.r).length || x.fd != null || x.fl > 0 || Object.keys(x.dz || {}).length || x.pl != null)); };
+const doseOf = (d, mid) => S.days[d] && S.days[d].dz && S.days[d].dz[mid] != null ? S.days[d].dz[mid] : null;
+/* ratings used by the PMDD check: never ones estimated from imported notes */
+const rOfC = (d, k) => S.days[d] && S.days[d].im ? null : rOf(d, k);
+
+/* ---------------------------------------------------------------------
+   4. CYCLES + PREDICTION
+   A cycle runs from one period start to the day before the next. Lengths outside 15-60 days are shown but left out of predictions
+   (usually a missed log).
+   --------------------------------------------------------------------- */
+function cycles() {
+  if (_c.cy) return _c.cy; const st = S.starts, out = [];
+  st.forEach((s, i) => { const nx = st[i + 1] || null; let pl = 0; for (let x = s; S.days[x] && S.days[x].fl >= 1 && pl < 15; x = sh(x, 1)) pl++; out.push({ s, next: nx, len: nx ? dd(s, nx) : null, plen: pl || null }); });
+  return (_c.cy = out);
+}
+const usable = () => cycles().filter(c => c.len && c.len >= 15 && c.len <= 60);
+function stats() { return _c.st || (_c.st = statsRaw()); }
+function statsRaw() {
+  const u = usable(), last = u.slice(-6).map(c => c.len), all = u.map(c => c.len), pl = cycles().map(c => c.plen).filter(Boolean);
+  return { n: u.length, avg: last.length ? mean(last) : S.cfg.defCycle, sd: last.length >= 2 ? sdv(last) : null, med: median(all), min: all.length ? Math.min(...all) : null, max: all.length ? Math.max(...all) : null, plen: pl.length ? mean(pl) : S.cfg.defPeriod, guessed: !last.length };
+}
+function prediction() { if (_c.pr === undefined) _c.pr = predictionRaw(); return _c.pr; }
+function predictionRaw() {
+  const st = S.starts; if (!st.length) return null; const s = stats(), last = st[st.length - 1], L = Math.round(s.avg), w = Math.max(2, Math.round(s.sd || 2));
+  let next = sh(last, L); const today = ds(0); const late = next < today ? dd(next, today) : 0;
+  return { last, next, early: sh(next, -w), latest: sh(next, w), len: L, late, ovu: sh(next, -S.cfg.luteal), fertileFrom: sh(next, -S.cfg.luteal - 5), fertileTo: sh(next, -S.cfg.luteal + 1), guessed: s.guessed };
+}
+
+/* ---------------------------------------------------------------------
+   5. PHASES
+   For any date: which cycle it's in, cycle day, days until the next period (actual, or predicted for the current cycle), and phase.
+   --------------------------------------------------------------------- */
+function where(d) { const m = _c.wh || (_c.wh = {}); if (d in m) return m[d]; return (m[d] = whereRaw(d)); }
+function whereRaw(d) {
+  const st = S.starts; let i = -1; for (let j = st.length - 1; j >= 0; j--) if (st[j] <= d) { i = j; break; } if (i < 0) return null;
+  const c = cycles()[i], p = prediction(), next = c.next || (p ? p.next : sh(c.s, Math.round(stats().avg))), len = dd(c.s, next), cd = dd(c.s, d) + 1, until = dd(d, next);
+  const O = len - S.cfg.luteal + 1, plen = c.plen || S.cfg.defPeriod;
+  let ph; if (cd <= plen) ph = 'men'; else if (until <= 7) ph = 'pre'; else if (Math.abs(cd - O) <= 1) ph = 'ovu'; else if (cd > O + 1) ph = 'lut'; else ph = 'fol';
+  return { s: c.s, cd, len, until, O, ph, predicted: !c.next, late: until <= 0 && !c.next };
+}
+
+/* ---------------------------------------------------------------------
+   6. HORMONE MODEL: the textbook pattern, stretched to your cycle length. Relative (0-100% of each hormone's own peak), not measured.
+   Oestradiol peaks just before ovulation with a smaller luteal rise; progesterone rises after ovulation and peaks about a week later;
+   LH surges around ovulation; FSH rises early in the cycle with a smaller mid-cycle peak. Both fall before the next period.
+   --------------------------------------------------------------------- */
+const gs = (t, m, s) => Math.exp(-((t - m) ** 2) / (2 * s * s));
+const ga = (t, m, sl, sr) => gs(t, m, t <= m ? sl : sr);   // asymmetric: slow rise, quick fall
+function hormones(cd, len) {
+  const O = len - S.cfg.luteal + 1;
+  const E = 0.16 + 0.84 * ga(cd, O - 1, 3.2, 1.4) + 0.4 * gs(cd, O + 7, 3.2), P = 0.04 + 0.96 * gs(cd, O + 7, 3.0), LH = 0.08 + 0.92 * gs(cd, O - 0.5, 0.85), FSH = 0.22 + 0.28 * gs(cd, 3, 3.2) + 0.5 * gs(cd, O - 0.5, 1.0);
+  return { E: clamp(E, 0, 1), P: clamp(P, 0, 1), LH: clamp(LH, 0, 1), FSH: clamp(FSH, 0, 1) };
+}
+const HORM = { E: { n: 'Oestrogen', c: '#C2477A' }, P: { n: 'Progesterone', c: '#5B7FA6' }, LH: { n: 'LH', c: '#D9A400' }, FSH: { n: 'FSH', c: '#4C9F70' } };
+
+/* ---------------------------------------------------------------------
+   7. DAILY SCORES
+   --------------------------------------------------------------------- */
+const itemsOf = gs_ => ITEMS.filter(i => gs_.includes(i.g));
+function avgItems(d, list, min) { const x = S.days[d]; if (!x) return null; const v = list.map(i => x.r[i.k]).filter(v => v != null); return v.length >= (min || 1) ? mean(v) : null; }
+const OUTCOMES = {
+  pmdd: { n: 'PMDD score', l: 'PMDD score', f: d => avgItems(d, itemsOf(['emo', 'beh']), 1), dir: 1, u: '1-6' }, mood: { n: 'Mood', l: 'mood', f: d => S.days[d] ? S.days[d].md : null, dir: -1, u: '1-5' },
+  anx: { n: 'Anxiety', l: 'anxiety', f: d => rOf(d, 'anx'), dir: 1, u: '1-6' }, irr: { n: 'Irritability', l: 'irritability', f: d => rOf(d, 'irr'), dir: 1, u: '1-6' }, dep: { n: 'Low mood', l: 'low mood', f: d => rOf(d, 'dep'), dir: 1, u: '1-6' },
+  phy: { n: 'Physical', l: 'physical symptoms', f: d => avgItems(d, itemsOf(['phy'])), dir: 1, u: '1-6' },
+  body: { n: 'Pain and body', l: 'pain and body score', f: d => avgItems(d, FIB.concat(ITEMS.filter(i => i.k === 'pai')), 1), dir: 1, u: '1-6' },
+  areas: { n: 'Pain areas', l: 'number of pain areas', f: d => S.days[d] && S.days[d].pl ? Object.keys(S.days[d].pl).length : null, dir: 1, u: 'areas' }, imp: { n: 'Impact on your day', l: 'impact on your day', f: d => avgItems(d, itemsOf(['imp'])), dir: 1, u: '1-6' }
+};
+const loggedDays = () => _c.ld || (_c.ld = Object.keys(S.days).filter(checkedIn).sort());
+function streak() { let n = 0, d = ds(0); if (!checkedIn(d)) d = sh(d, -1); while (checkedIn(d)) { n++; d = sh(d, -1); } return n; }
+
+/* ---------------------------------------------------------------------
+   8. PMDD PATTERN CHECK: the C-PASS method, applied to every period start with enough ratings around it.
+   --------------------------------------------------------------------- */
+function itemRange(k) { if (!_c.rng) _c.rng = {}; if (_c.rng[k] != null) return _c.rng[k]; const v = Object.values(S.days).filter(x => !x.im).map(x => x.r[k]).filter(x => x != null); return (_c.rng[k] = v.length ? Math.max(...v) - Math.min(...v) : 0); }
+function frame(N) {   /* N = a period start (day 1) */
+  const pre = [], post = []; for (let i = -7; i <= -1; i++) pre.push(sh(N, i)); for (let i = 3; i <= 9; i++) post.push(sh(N, i));
+  const items = ITEMS.map(it => {
+    const a = pre.map(d => rOfC(d, it.k)).filter(v => v != null), b = post.map(d => rOfC(d, it.k)).filter(v => v != null), rg = itemRange(it.k);
+    if (a.length < CPASS.minDays || b.length < CPASS.minDays) return { it, enough: false, na: a.length, nb: b.length };
+    const pm = mean(a), qm = mean(b), el = rg > 0 ? (pm - qm) / rg * 100 : 0, clr = Math.max(...b) <= CPASS.clearMax, sev = a.filter(v => v >= CPASS.sevMin).length;
+    return { it, enough: true, pm, qm, el, clr, sev, ok: el >= CPASS.elev && clr && sev >= CPASS.sevDays };
+  });
+  const enough = items.filter(x => x.it.d !== 'I').filter(x => x.enough).length >= 10, met = [...new Set(items.filter(x => x.ok && x.it.d !== 'I').map(x => x.it.d))], core = met.filter(d => d[0] === 'B'), interf = items.some(x => x.ok && x.it.d === 'I');
+  const verdict = !enough ? 'data' : met.length >= 5 && core.length >= 1 && interf ? 'pmdd' : met.length >= 1 ? 'some' : 'none';
+  return { N, items, met, core, interf, verdict, complete: sh(N, 9) <= ds(0) };
+}
+const frames = () => _c.fr || (_c.fr = S.starts.map(frame).filter(f => f.items.some(x => x.enough)));
+const VERDICT = { pmdd: ['PMDD pattern', 'At least 5 symptom areas (including a mood one) rose before your period and cleared after, and they got in the way of your day.'], some: ['Some premenstrual worsening', 'Some symptoms rose before your period and cleared after, but not the full PMDD pattern.'], none: ['No clear premenstrual pattern', 'Symptoms didn\'t clearly rise before your period and clear after.'], data: ['Not enough ratings yet', 'Needs at least 4 rated days in the week before and in days 4-10 after this period start.'] };
+
+/* ---------------------------------------------------------------------
+   9. FOOD (AND OTHER THINGS) ASSOCIATIONS
+   For each food group: mean outcome on days you had it minus days you didn't, worked out separately inside each part of the cycle and then
+   averaged (weighted by how many days each part had). Parts: period, follicular, ovulation, then 3-day bands counted back from the next
+   period through the second half (symptoms climb steadily there). That stops cravings before a period faking a link with feeling worse.
+   Same day, and next day. The interval is a rough 95% range; with many food groups, expect one or two to look linked by chance.
+   --------------------------------------------------------------------- */
+const stratum = w => (w.ph === 'lut' || w.ph === 'pre') ? 'u' + Math.min(4, Math.floor((Math.max(1, w.until) - 1) / 3)) : w.ph;
+function assoc(fid, isTag, oKey, lag) {
+  const f = OUTCOMES[oKey].f, strata = {};
+  loggedDays().forEach(d => {
+    const x = S.days[d], valid = isTag ? true : x.fd != null; if (!valid) return; const od = lag ? sh(d, 1) : d, y = f(od); if (y == null) return; const w = where(od); if (!w) return;
+    const has = isTag ? !!x.tg[fid] : !!x.fd[fid], key = stratum(w); (strata[key] = strata[key] || { a: [], b: [] })[has ? 'a' : 'b'].push(y);
+  });
+  let sw = 0, swd = 0, swv = 0, n1 = 0, n0 = 0; Object.values(strata).forEach(s => { n1 += s.a.length; n0 += s.b.length; if (s.a.length < 2 || s.b.length < 2) return;
+    const w = s.a.length * s.b.length / (s.a.length + s.b.length), d = mean(s.a) - mean(s.b), v = (svar(s.a) || 0.25) / s.a.length + (svar(s.b) || 0.25) / s.b.length; sw += w; swd += w * d; swv += w * w * v; });
+  if (!sw) return { n1, n0, diff: null };
+  const diff = swd / sw, se = Math.sqrt(swv) / sw; return { n1, n0, diff, se, lo: diff - 1.96 * se, hi: diff + 1.96 * se };
+}
+function assocLabel(a, dir) {
+  if (a.diff == null || a.n1 < 5 || a.n0 < 5) return { t: 'Need more days', c: 'mu' };
+  const worse = a.diff * dir > 0, clear = a.lo > 0 || a.hi < 0;
+  if (clear) return { t: worse ? 'Linked with worse' : 'Linked with better', c: worse ? 'bad' : 'good' };
+  if (Math.abs(a.diff) >= 0.4) return { t: worse ? 'Maybe worse' : 'Maybe better', c: 'mu' };
+  return { t: 'No clear link', c: 'mu' };
+}
+
+/* ---------------------------------------------------------------------
+   9b. MEDICATION DOSE AND HOW YOU FEEL
+   A within-cycle-part regression: inside each part of the cycle (same bands as the food analysis), does a higher dose go with a better or
+   worse outcome? Those within-part slopes are pooled. Comparing like with like matters because you vary the dose across the cycle, so dose
+   and phase move together. Reported per `step` (e.g. per 25 mg).
+   modes: 0 = that day's dose, 1 = the previous day's dose, 7 = average dose over the last 7 days (needs 4+ logged).
+   --------------------------------------------------------------------- */
+function doseX(mid, d, mode) {
+  if (mode === 0) return doseOf(d, mid); if (mode === 1) return doseOf(sh(d, -1), mid);
+  const v = []; for (let i = 0; i < 7; i++) { const x = doseOf(sh(d, -i), mid); if (x != null) v.push(x); } return v.length >= 4 ? mean(v) : null;
+}
+function doseLink(mid, oKey, mode) {
+  const f = OUTCOMES[oKey].f, st = {}, med = S.meds.find(m => m.id === mid), step = med ? med.step : 25;
+  loggedDays().forEach(d => { const y = f(d); if (y == null) return; const x = doseX(mid, d, mode); if (x == null) return; const w = where(d); if (!w) return; const k = stratum(w); (st[k] = st[k] || []).push([x, y]); });
+  let sxx = 0, sxy = 0, n = 0, k = 0; const used = [];
+  Object.values(st).forEach(p => { if (p.length < 3) return; const mx = mean(p.map(q => q[0])), my = mean(p.map(q => q[1])); let a = 0, b = 0; p.forEach(q => { a += (q[0] - mx) ** 2; b += (q[0] - mx) * (q[1] - my); }); if (a <= 1e-9) return; sxx += a; sxy += b; n += p.length; k++; used.push({ p, mx, my }); });
+  const all = Object.values(st).reduce((s, p) => s + p.length, 0);
+  if (!sxx || n - k - 1 < 3) return { n: all, b: null, step };
+  const bb = sxy / sxx; let rss = 0; used.forEach(u => u.p.forEach(q => { rss += (q[1] - u.my - bb * (q[0] - u.mx)) ** 2; }));
+  const se = Math.sqrt(rss / (n - k - 1) / sxx), diff = bb * step;
+  return { n: all, used: n, b: bb, step, diff, se: se * step, lo: diff - 1.96 * se * step, hi: diff + 1.96 * se * step };
+}
+/* when the dose changed, from day to day (only between logged days) */
+function doseChanges(mid) { const out = []; let prev = null; Object.keys(S.days).sort().forEach(d => { const v = doseOf(d, mid); if (v == null) return; if (prev != null && v !== prev.v) out.push({ d, from: prev.v, to: v }); prev = { d, v }; }); return out; }
+
+/* ---------------------------------------------------------------------
+   10. CHART ENGINE (lines, dots, bars, bands, zones, rules). One unit -> labelled axis; mixed units -> each scaled to its own range.
+   --------------------------------------------------------------------- */
+function chart(o) {
+  const W = 320, H = o.H || 170, span = Math.max(1, o.span), groups = [...new Set(o.layers.filter(l => l.type !== 'zone' && l.type !== 'v').map(l => l.u || 'a'))], real = groups.length <= 1, L = real ? 30 : 10, R = 10, T = 8, B = 22, sc = {};
+  const X = x => L + x * ((W - L - R) / span), yf = o.yfmt || (v => f1(v));
+  (groups.length ? groups : ['a']).forEach(g => {
+    const vals = []; o.layers.filter(l => (l.u || 'a') === g && l.type !== 'zone').forEach(l => { (l.pts || []).forEach(p => { if (p) { vals.push(p.y); if (p.lo != null) vals.push(p.lo, p.hi); } }); if (l.type === 'h' && !l.free) vals.push(l.y); });
+    let lo = vals.length ? Math.min(...vals) : 0, hi = vals.length ? Math.max(...vals) : 1; const pad = (hi - lo) * 0.08 || 0.5; sc[g] = { lo: lo - pad, hi: hi + pad };
+    if (o.ymin != null && real) sc[g].lo = o.ymin; if (o.ymax != null && real) sc[g].hi = o.ymax;
+  });
+  const Y = (g, v) => T + (H - T - B) * (1 - (v - sc[g].lo) / (sc[g].hi - sc[g].lo)), g0 = groups[0] || 'a', pts = l => (l.pts || []).filter(Boolean);
+  const body = o.layers.map(l => { const g = l.u || 'a', c = l.c || 'var(--ac)', p = pts(l);
+    if (l.type === 'zone') return `<rect x="${X(l.x0).toFixed(1)}" y="${T}" width="${Math.max(0, X(l.x1) - X(l.x0)).toFixed(1)}" height="${H - T - B}" fill="${c}" opacity="${l.o || 0.12}"/>${l.t ? `<text x="${((X(l.x0) + X(l.x1)) / 2).toFixed(1)}" y="${T + 10}" font-size="9" text-anchor="middle" fill="${c}">${esc(l.t)}</text>` : ''}`;
+    if (l.type === 'v') return `<path d="M${X(l.x).toFixed(1)} ${T}V${H - B}" stroke="${c}" stroke-width="${l.w || 1.6}" ${l.dash === false ? '' : 'stroke-dasharray="3 3"'}/>`;
+    if (l.type === 'band') { if (p.length < 2) return ''; const up = p.map(q => X(q.x).toFixed(1) + ',' + Y(g, q.hi).toFixed(1)), dn = p.slice().reverse().map(q => X(q.x).toFixed(1) + ',' + Y(g, q.lo).toFixed(1)); return `<polygon points="${up.concat(dn).join(' ')}" fill="${c}" opacity="${l.o || 0.18}"/>`; }
+    if (l.type === 'line') return p.length < 2 ? '' : `<polyline fill="none" stroke="${c}" stroke-width="${l.w || 2.6}" ${l.dash ? `stroke-dasharray="${l.dash}"` : ''} stroke-linecap="round" stroke-linejoin="round" points="${p.map(q => X(q.x).toFixed(1) + ',' + Y(g, q.y).toFixed(1)).join(' ')}"/>`;
+    if (l.type === 'dots') return p.map(q => `<circle cx="${X(q.x).toFixed(1)}" cy="${Y(g, q.y).toFixed(1)}" r="${l.r || 3}" fill="${q.c || c}" ${q.c === 'var(--pn)' ? `stroke="${c}" stroke-width="1.6"` : ''} opacity="${l.o || 0.85}"/>`).join('');
+    if (l.type === 'bars') { const bw = Math.max(2, Math.min(l.bw || 22, (W - L - R) / (span + 1) * 0.72)), y0 = Y(g, clamp(l.base || 0, sc[g].lo, sc[g].hi)); return p.map(q => { const y = Y(g, q.y); return `<rect x="${(X(q.x) - bw / 2).toFixed(1)}" y="${Math.min(y, y0).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Math.abs(y - y0)).toFixed(1)}" rx="2" fill="${q.c || c}" opacity="${l.o || 0.9}"/>`; }).join(''); }
+    if (l.type === 'h') return `<path d="M${L} ${Y(g, l.y).toFixed(1)}H${W - R}" stroke="${c}" stroke-dasharray="5 4" stroke-width="1.6" opacity=".85"/>${l.t ? `<text x="${W - R}" y="${(Y(g, l.y) - 4).toFixed(1)}" text-anchor="end" font-size="10" fill="${c}">${esc(l.t)}</text>` : ''}`;
+    return ''; }).join('');
+  const axis = real && !o.noaxis ? `<text x="2" y="${(Y(g0, sc[g0].hi) + 9).toFixed(0)}" font-size="10" fill="var(--mu)">${yf(sc[g0].hi)}</text><text x="2" y="${Y(g0, sc[g0].lo).toFixed(0)}" font-size="10" fill="var(--mu)">${yf(sc[g0].lo)}</text>` : '';
+  const xl = (o.xl || []).map((l, i, a) => `<text x="${X(l.x).toFixed(1)}" y="${H - 5}" font-size="10" text-anchor="${l.a || (i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle')}" fill="var(--mu)">${esc(l.t)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;margin-top:6px" role="img" aria-label="${esc(o.label || 'Graph')}">${axis}<path d="M${L} ${H - B}H${W - R}" stroke="var(--ln)" stroke-width="2"/>${body}${xl}</svg>`;
+}
+const legend = items => `<div class="mt">${items.map(i => `<span class="lg"><i style="background:${i.c}"></i>${esc(i.n)}${i.v ? ' <b>' + i.v + '</b>' : ''}</span>`).join('')}</div>`;
+const chip = (onclick, label, on, col) => `<button class="chip ${on ? 'on' : ''}" ${on && col ? `style="border-color:${col};background:${col}22"` : ''} onclick="${onclick}">${col ? `<span class="dot" style="background:${col}"></span>` : ''}${esc(label)}</button>`;
+const coachStrip = () => MSG ? `<div class="coach" role="status" aria-live="polite">💬 ${esc(MSG)}</div>` : '';
+const phasePill = ph => `<span class="pill" style="background:${PHASES[ph].c}22;border-color:${PHASES[ph].c};color:var(--ink)"><span class="dot" style="background:${PHASES[ph].c}"></span>${PHASES[ph].n}</span>`;
+const OCOL = { pmdd: '#8E6BBF', mood: '#4C9F70', anx: '#D9622B', irr: '#B5524A', dep: '#5B7FA6', phy: '#D9A400', body: '#2A9D8F', areas: '#9A7B4F', imp: '#3E3E3E' };
+
+/* ---------------------------------------------------------------------
+   11. VIEWS
+   --------------------------------------------------------------------- */
+let PSEL = ['pmdd', 'anx'], PF = null, FO = 'pmdd', FL = 0, CALM = null;
+
+function supportCard(force) {
+  const recent = [0, 1, 2].map(i => rOf(sh(ds(0), -i), 'sui')).filter(v => v != null), show = force || recent.some(v => v >= SAFE_SHOW);
+  if (!show) return '';
+  return `<div class="card alert"><h3>${force ? 'Need support now?' : "You've had some really hard days"}</h3>
+   <div class="mt">${force ? 'If things feel too much, you don\'t have to wait for it to pass on your own.' : 'Thoughts like these can be part of PMDD, and they\'re serious. You deserve support with them, today.'}</div>
+   <div class="mt">📞 <b>Samaritans: 116 123</b>, free, any time, day or night</div><div class="mt">💬 <b>Text SHOUT to 85258</b> if talking feels like too much</div><div class="mt">🩺 <b>NHS 111, option 2</b> for urgent mental-health help (England)</div><div class="mt">🚨 <b>999 or A&amp;E</b> if you might act on these thoughts or can't keep yourself safe</div>
+   <div class="mu sm mt">Your GP can help with PMDD too. Treatments exist, and your ratings here are exactly what they'll want to see.</div></div>`;
+}
+function rateRow(it, x) { const v = x.r[it.k]; return `<div class="rt"><div class="rn">${esc(it.n)}</div><div class="rb" role="group" aria-label="${esc(it.n)}">${[1, 2, 3, 4, 5, 6].map(n => `<button class="${v === n ? 'on s' + n : ''}" aria-pressed="${v === n}" aria-label="${n}, ${SCALE[n - 1]}" onclick="rate('${it.k}',${n})">${n}</button>`).join('')}</div></div>`; }
+function vToday() {
+  const d = TD, isT = d === ds(0), x = S.days[d] || { fl: 0, md: null, r: {}, fd: null, tg: {}, sl: null, nt: '', dz: {}, ev: [], im: 0 }, w = where(d), p = prediction(), isStart = S.starts.includes(d);
+  const h = w && !S.cfg.hc ? hormones(w.cd, w.len) : null, rated = ITEMS.filter(i => x.r[i.k] != null).length, all = ITEMS.concat(EXTRA);
+  const grp = g => `<div class="mt"><div class="mu sm"><b>${GROUPS[g]}</b></div>${all.filter(i => i.g === g && !QUICK.includes(i.k)).map(i => rateRow(i, x)).join('')}</div>`;
+  return coachStrip() + supportCard(false) + `
+  <div class="card"><div class="row sb"><button class="chip" onclick="goDay(-1)" aria-label="Previous day">‹</button><div style="text-align:center"><b>${isT ? 'Today' : pretty(d)}</b><div class="mu sm">${isT ? pretty(d) : prettyY(d)}</div></div><button class="chip" ${isT ? 'disabled' : ''} onclick="goDay(1)" aria-label="Next day">›</button></div>
+   <div class="row mt" style="justify-content:center;gap:6px"><input type="date" value="${d}" max="${ds(0)}" onchange="TD=this.value||ds(0);render()" aria-label="Pick a date" style="width:auto"><button class="chip" ${isT ? 'disabled' : ''} onclick="TD=ds(0);render()">Today</button></div>
+   ${w ? `<div class="row mt" style="justify-content:space-between"><span><b style="font-size:20px">Cycle day ${w.cd}</b></span>${phasePill(w.ph)}</div>
+    <div class="mu sm">${w.predicted ? (w.late ? `Your period is ${plural(-w.until + (w.until === 0 ? 0 : 0), 'day')} past the predicted date.` : `Next period expected ${pretty(p.next)} (likely ${shortD(p.early)}–${shortD(p.latest)}), ${plural(w.until, 'day')} away.`) : `This cycle was ${w.len} days long.`}</div>
+    ${h ? `<div class="hm mt">${Object.keys(HORM).map(k => `<div><span class="mu sm">${HORM[k].n}</span><div class="bar"><i style="width:${pc(h[k])}%;background:${HORM[k].c}"></i></div></div>`).join('')}</div><div class="mu sm">Where hormones typically are on this cycle day (an illustration, not a measurement).</div>` : ''}`
+     : `<div class="note mt">Log the first day of your period and predictions, phases and patterns all switch on.</div>`}</div>
+  ${x.im ? `<div class="card warn"><b>Imported from notes</b><div class="mu sm mt">The ratings on this day were estimated from your notes${x.nt ? ': "' + esc(x.nt.slice(0, 140)) + (x.nt.length > 140 ? '…' : '') + '"' : ''}. They feed the charts but stay out of the PMDD check. Adjust anything that's off, then confirm.</div><div class="row mt"><button class="btn g" onclick="confirmIm()">These are right, use them as my own ratings</button></div></div>` : ''}
+  ${S.meds.length ? `<div class="card"><h3>💊 Medication</h3>${S.meds.map(m => { const v = x.dz[m.id], rec = recentDoses(m.id, d); return `<div class="mt"><div class="gl"><b>${esc(m.n)}</b><span class="mu sm">${v != null ? (v ? v + ' ' + esc(m.u) : 'none taken') : 'not logged'}</span></div>
+     <div class="row mt" style="gap:6px">${rec.map(r => chip(`setDose('${m.id}',${r})`, r + ' ' + m.u, v === r, '#5B7FA6')).join('')}${chip(`setDose('${m.id}',0)`, 'None today', v === 0, '')}<label style="max-width:110px;min-width:90px">Other (${esc(m.u)})<input type="number" inputmode="decimal" step="any" value="${v != null && !rec.includes(v) && v ? v : ''}" onchange="setDose('${m.id}',this.value)"></label></div></div>`; }).join('')}${x.ev.length ? `<div class="mu sm mt">${x.ev.map(esc).join(' · ')}</div>` : ''}</div>` : ''}
+  <div class="card"><h3>🩸 Period</h3><div class="row mt"><button class="btn ${isStart ? '' : 'g'}" onclick="toggleStart()">${isStart ? '✓ Period started this day' : 'My period started this day'}</button></div>
+   <div class="row mt" style="gap:6px">${FLOW.map((n, i) => chip(`setFlow(${i})`, n, x.fl === i, i ? '#C2477A' : '')).join('')}</div></div>
+  <div class="card"><h3>Mood</h3><div class="row mt" style="gap:6px;justify-content:space-between">${MOODS.map((m, i) => `<button class="cm ${x.md === i + 1 ? 'on' : ''}" aria-pressed="${x.md === i + 1}" aria-label="${m[1]}" onclick="setMood(${i + 1})"><span style="font-size:26px">${m[0]}</span><span class="sm">${m[1]}</span></button>`).join('')}</div></div>
+  <div class="card"><div class="row sb"><h3>How you felt</h3><span class="mu sm">${rated}/${ITEMS.length} rated</span></div><div class="mu sm">1 not at all · 2 minimal · 3 mild · 4 moderate · 5 severe · 6 extreme</div>
+   ${QUICK.map(k => rateRow(ITEMS.find(i => i.k === k), x)).join('')}
+   <div class="row mt"><button class="chip" onclick="ALL=!ALL;render()">${ALL ? 'Show fewer' : `Show all ${ITEMS.length + EXTRA.length} (the full PMDD check)`}</button></div>
+   ${ALL ? ['emo', 'beh', 'phy', 'fib'].map(grp).join('') + `<div class="mt"><div class="mu sm"><b>Where it hurt</b> ${x.pl ? '· ' + plural(Object.keys(x.pl).length, 'area') : ''}</div><div class="row mt" style="gap:6px">${REGIONS.map(([k, n]) => chip(`togglePain('${k}')`, n, !!(x.pl && x.pl[k]), '#2A9D8F')).join('')}${chip('noPain()', 'No pain anywhere', x.pl != null && !Object.keys(x.pl).length, '')}</div></div>` + ['imp', 'safe'].map(grp).join('') : ''}
+   <div class="row mt"><button class="chip" onclick="sameAsYesterday()">Same as yesterday</button><button class="chip" onclick="fillRest()">Set the rest to 1 (not at all)</button></div>
+   <div class="mu sm mt">Rating all ${ITEMS.length} every day, for at least two cycles, is what a PMDD assessment needs. The quick five still feed every chart.</div></div>
+  <div class="card"><h3>🥗 Food groups today</h3><div class="mu sm">Just which groups you had, no amounts.</div><div class="row mt" style="gap:6px">${S.foods.map(f => chip(`toggleFood('${f.id}')`, f.i + ' ' + f.n, !!(x.fd && x.fd[f.id]), '#4C9F70')).join('')}${chip('noFood()', 'None of these', x.fd != null && !Object.keys(x.fd).length, '')}</div></div>
+  <div class="card"><h3>Other things</h3><div class="row mt" style="gap:6px">${S.tags.map(t => chip(`toggleTag('${t.id}')`, t.i + ' ' + t.n, !!x.tg[t.id], '#5B7FA6')).join('')}</div>
+   <div class="row mt"><label style="max-width:150px">Hours of sleep<input type="number" step="0.5" inputmode="decimal" value="${x.sl != null ? x.sl : ''}" onchange="setSleep(this.value)"></label><label style="flex:2 1 160px">Note<input value="${esc(x.nt)}" maxlength="200" placeholder="Anything worth remembering" onchange="setNote(this.value)"></label></div></div>
+  <div class="card"><div class="mu">📝 ${streak() ? `${plural(streak(), 'day')} in a row logged.` : 'Log today to start a streak.'}${w ? ` This cycle: ${Array.from({ length: Math.min(w.cd, w.len) }, (_, i) => sh(w.s, i)).filter(z => z <= ds(0) && avgItems(z, ITEMS, 3) != null).length} of ${Math.min(w.cd, dd(w.s, ds(0)) + 1)} days rated.` : ''}</div></div>`;
+}
+
+/* ---------- CYCLE ---------- */
+function calendar(m) {
+  const first = m + '-01', start = monday(first), today = ds(0), mi = +m.slice(5); let cells = '';
+  for (let i = 0; i < 42; i++) { const d = sh(start, i), inM = +d.slice(5, 7) === mi, w = where(d), x = S.days[d], fut = d > today, bleed = x && x.fl >= 1, md = x && x.md;
+    const bg = w ? PHASES[w.ph].c : 'transparent'; cells += `<button class="cd ${inM ? '' : 'out'} ${d === today ? 'td' : ''} ${bleed ? 'bl' : ''}" style="--pc:${bg};${fut ? 'opacity:.55;' : ''}" onclick="TD='${d > today ? today : d}';go('today')" aria-label="${pretty(d)}${w ? ', ' + PHASES[w.ph].n : ''}">${+d.slice(8)}${md ? `<i class="md m${md}"></i>` : ''}${S.starts.includes(d) ? '<b class="st">●</b>' : ''}</button>`; if (i >= 34 && sh(start, i + 1).slice(5, 7) !== m.slice(5) && (i + 1) % 7 === 0) break; }
+  return `<div class="cal">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(x => `<span class="mu sm">${x}</span>`).join('')}${cells}</div>`;
+}
+function vCycle() {
+  const p = prediction(), s = stats(), w = where(ds(0)), cy = cycles(), u = usable(), m = CALM || ds(0).slice(0, 7);
+  if (!p) return coachStrip() + `<div class="card"><h2>Cycle</h2><div class="mu mt">Log the first day of a period on the Today tab (or add past start dates below) and predictions appear here.</div></div>` + startsCard();
+  const len = w ? w.len : p.len, O = len - S.cfg.luteal + 1, hs = Array.from({ length: len }, (_, i) => hormones(i + 1, len)), out = u.filter(c => c.len < 21 || c.len > 35);
+  return coachStrip() + `
+  <div class="card"><h2 style="margin:0">Next period</h2><div class="big mt">${pretty(p.next)}</div><div class="mu">${p.late ? `<b class="bad">${plural(p.late, 'day')} later than predicted.</b> Cycles vary, and stress, illness or pregnancy can all delay a period.` : `Likely between ${shortD(p.early)} and ${shortD(p.latest)} · ${plural(dd(ds(0), p.next), 'day')} away`}</div>
+   ${w ? `<div class="row mt" style="justify-content:space-between"><b>Cycle day ${w.cd} of about ${w.len}</b>${phasePill(w.ph)}</div>` : ''}
+   <div class="tiles"><div class="tile"><b>${shortD(p.ovu)}</b><span>Ovulation, estimated</span></div><div class="tile"><b>${shortD(sh(p.next, -7))}</b><span>Premenstrual week starts</span></div><div class="tile"><b>${s.guessed ? '–' : f1(s.avg)}</b><span>Average cycle, days${s.guessed ? ' (using ' + S.cfg.defCycle + ' until you have one)' : ''}</span></div></div>
+   <div class="mu sm mt">Ovulation is estimated as ${S.cfg.luteal} days before the next period. These dates are estimates and aren't reliable for contraception.</div></div>
+  <div class="card"><h3>Hormones across this cycle</h3>${S.cfg.hc ? '<div class="mu mt">You said you use hormonal contraception, which changes this pattern, so the curve is hidden. You can change that in Settings.</div>' : `
+   ${chart({ label: 'Typical hormone pattern', span: len - 1, ymin: 0, ymax: 1.05, noaxis: true, layers: [{ type: 'zone', x0: 0, x1: Math.min(len - 1, (s.plen || 5) - 0.5), c: PHASES.men.c, o: 0.12 }, { type: 'zone', x0: Math.max(0, len - 8), x1: len - 1, c: PHASES.pre.c, o: 0.12, t: 'premenstrual' }, { type: 'zone', x0: O - 2.5, x1: O - 0.5, c: PHASES.ovu.c, o: 0.18 }].concat(Object.keys(HORM).map(k => ({ type: 'line', c: HORM[k].c, w: k === 'E' || k === 'P' ? 3 : 2, pts: hs.map((h, i) => ({ x: i, y: h[k] })) }))).concat(w && !w.late ? [{ type: 'v', x: w.cd - 1, c: 'var(--ink)', w: 2, dash: false }] : []), xl: [{ x: 0, t: 'Day 1' }, { x: O - 1, t: 'ovulation' }, { x: len - 1, t: 'Day ' + len }] })}
+   ${legend(Object.keys(HORM).map(k => ({ c: HORM[k].c, n: HORM[k].n, v: w && !w.late ? pc(hormones(w.cd, w.len)[k]) + '%' : '' })))}
+   <div class="mu sm">The usual textbook pattern stretched to your cycle length: oestrogen peaks just before ovulation and has a smaller rise later; progesterone climbs after ovulation and peaks about a week later; both fall in the days before a period. Percentages are of each hormone's own peak, not blood levels. In PMDD, levels are usually normal. The current understanding is that the brain reacts unusually strongly to these normal rises and falls, which is why the premenstrual week matters.</div>`}</div>
+  <div class="card"><h3>Your cycles</h3><div class="tiles"><div class="tile"><b>${s.n}</b><span>Complete cycles</span></div><div class="tile"><b>${s.med != null ? s.med : '–'}</b><span>Median length</span></div><div class="tile"><b>${s.min != null ? s.min + '–' + s.max : '–'}</b><span>Shortest to longest</span></div>
+   <div class="tile"><b>${s.sd != null ? '±' + f1(s.sd) : '–'}</b><span>Variation (last 6)</span></div><div class="tile"><b>${f1(s.plen)}</b><span>Period length, days</span></div><div class="tile"><b>${S.starts.length}</b><span>Periods logged</span></div></div>
+   ${u.length >= 2 ? chart({ label: 'Cycle lengths', span: u.length - 1, ymin: Math.max(0, s.min - 4), ymax: s.max + 1, layers: [{ type: 'bars', c: '#C2477A', base: Math.max(0, s.min - 4), pts: u.map((c, i) => ({ x: i, y: c.len })) }, { type: 'h', y: s.avg, c: 'var(--ink)', t: 'avg ' + f1(s.avg) }], yfmt: v => Math.round(v), xl: [{ x: 0, t: shortD(u[0].s) }, { x: u.length - 1, t: shortD(u[u.length - 1].s) }] }) : ''}
+   ${out.length ? `<div class="warnbox">${plural(out.length, 'cycle')} fell outside the usual 21–35 days. That can be normal now and then, but it's worth mentioning to a GP if it keeps happening.</div>` : ''}</div>
+  <div class="card"><div class="row sb"><button class="chip" onclick="calNav(-1)" aria-label="Previous month">‹</button><b>${new Date(m + '-15T12:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</b><button class="chip" onclick="calNav(1)" aria-label="Next month">›</button></div>${calendar(m)}
+   ${legend(PHASE_ORDER.map(k => ({ c: PHASES[k].c, n: PHASES[k].n })))}<div class="mu sm">● marks a period start; the small dot is that day's mood; faded days are predicted.</div></div>` + startsCard();
+}
+function startsCard() {
+  return `<div class="card"><h3>Period start dates</h3><div class="row mt"><label>Add a past start<input type="date" id="addst" max="${ds(0)}"></label><button class="btn g" onclick="addStart()">Add</button></div>
+   ${S.starts.slice().reverse().map(s => { const c = cycles().find(x => x.s === s); return `<div class="meal"><span>${prettyY(s)}</span><span class="mu sm">${c && c.len ? c.len + ' days' : 'current'}${c && c.plen ? ' · bled ' + c.plen + 'd' : ''} <button class="chip" onclick="delStart('${s}')" aria-label="Remove ${prettyY(s)}">✕</button></span></div>`; }).join('')}</div>`;
+}
+
+/* ---------- PATTERNS ---------- */
+function aligned(key) {
+  const f = OUTCOMES[key].f, out = []; for (let k = -14; k <= 10; k++) { if (k === 0) continue; const v = []; S.starts.forEach(N => { const d = k < 0 ? sh(N, k) : sh(N, k - 1); if (d > ds(0)) return; const y = f(d); if (y != null) v.push(y); }); out.push({ k, y: v.length ? mean(v) : null, n: v.length }); }
+  return out;
+}
+const kx = k => k < 0 ? k + 14 : k + 13;   // -14..-1 -> 0..13, 1..10 -> 14..23
+function phaseTable() {
+  const rows = PHASE_ORDER.map(ph => { const ds_ = loggedDays().filter(d => { const w = where(d); return w && w.ph === ph; }), m = k => { const v = ds_.map(OUTCOMES[k].f).filter(x => x != null); return v.length ? mean(v) : null; }; return { ph, n: ds_.length, pm: m('pmdd'), md: m('mood'), ax: m('anx'), py: m('phy') }; });
+  return rows;
+}
+function vPatterns() {
+  const fr = frames(), sel = fr.find(f => f.N === PF) || fr.filter(f => f.verdict !== 'data').slice(-1)[0] || fr.slice(-1)[0], done = fr.filter(f => f.verdict !== 'data'), pm = done.filter(f => f.verdict === 'pmdd').length, pt = phaseTable();
+  if (!S.starts.length || loggedDays().length < 3) return coachStrip() + `<div class="card"><h2>Patterns</h2><div class="mu mt">Patterns appear once you've logged a period start and a few days of ratings. The PMDD check needs ratings in the week before a period and in days 4–10 after it starts.</div><div class="row mt"><button class="btn g" onclick="go('report')">See the GP summary layout</button></div></div>` + supportCard(false);
+  const lay = [{ type: 'zone', x0: 6.5, x1: 13.5, c: PHASES.pre.c, o: 0.12, t: 'week before' }, { type: 'zone', x0: 16.5, x1: 23, c: PHASES.fol.c, o: 0.12, t: 'days 4–10' }, { type: 'v', x: 13.5, c: PHASES.men.c, w: 2, dash: false }].concat(PSEL.map(k => ({ type: 'line', u: OUTCOMES[k].u, c: OCOL[k], w: 3, pts: aligned(k).map(a => a.y == null ? null : { x: kx(a.k), y: a.y }) })));
+  const mixed = new Set(PSEL.map(k => OUTCOMES[k].u)).size > 1, heatK = [-7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const hv = (k, it) => { const v = []; S.starts.forEach(N => { const d = k < 0 ? sh(N, k) : sh(N, k - 1); if (d > ds(0)) return; const y = rOf(d, it.k); if (y != null) v.push(y); }); return v.length ? mean(v) : null; };
+  return coachStrip() + supportCard(false) + `
+  <div class="card"><h2 style="margin:0">Across your cycle</h2><div class="mu">Every cycle lined up on the day your period started, then averaged. The purple week is where PMDD symptoms show up; days 4–10 are where they should clear.</div>
+   <div class="row mt" style="gap:6px">${Object.keys(OUTCOMES).map(k => chip(`psel('${k}')`, OUTCOMES[k].n, PSEL.includes(k), OCOL[k])).join('')}</div>
+   ${PSEL.length ? chart({ label: 'Symptoms aligned to period start', span: 23, layers: lay, xl: [{ x: 0, t: '−14' }, { x: 7, t: '−7' }, { x: 13.5, t: 'period', a: 'middle' }, { x: 23, t: '+10' }] }) + legend(PSEL.map(k => ({ c: OCOL[k], n: OUTCOMES[k].n + ' (' + OUTCOMES[k].u + ')' }))) + (mixed ? '<div class="mu sm">Different scales, so each line is drawn to its own range.</div>' : '') : '<div class="mu mt">Pick at least one.</div>'}</div>
+  <div class="card"><h3>PMDD pattern check</h3><div class="mu sm">The C-PASS method that researchers and clinicians use on daily ratings: for each symptom, did it rise by at least 30% in the week before your period, reach moderate (4+) on at least 2 days, and drop back to mild or less (3 or under) on days 4–10?</div>
+   ${done.length ? `<div class="note"><b>${plural(done.length, 'cycle')} checked: ${pm} with the PMDD pattern${done.filter(f => f.verdict === 'some').length ? `, ${done.filter(f => f.verdict === 'some').length} with some premenstrual worsening` : ''}.</b> ${done.length < 2 ? 'C-PASS needs at least two cycles, so keep going.' : pm >= 2 ? 'This is the pattern a GP or specialist looks for. It\'s worth showing them, because PMDD is treatable.' : ''}</div>` : '<div class="mu mt">No cycle has enough ratings around it yet.</div>'}
+   ${Object.values(S.days).some(x => x.im) ? `<div class="mu sm mt">${plural(Object.values(S.days).filter(x => x.im).length, 'day')} imported from notes ${Object.values(S.days).filter(x => x.im).length === 1 ? 'is' : 'are'} left out of this check, because their ratings were estimated. Confirm a day on the Today tab to include it.</div>` : ''}
+   ${fr.length ? `<div class="row mt" style="gap:6px">${fr.map(f => chip(`PF='${f.N}';render()`, shortD(f.N) + (f.verdict === 'pmdd' ? ' ●' : ''), sel && f.N === sel.N, f.verdict === 'pmdd' ? PHASES.pre.c : '')).join('')}</div>` : ''}
+   ${sel ? `<div class="mt"><b>${VERDICT[sel.verdict][0]}</b> <span class="mu sm">around ${prettyY(sel.N)}${sel.complete ? '' : ' (days 4–10 not over yet)'}</span><div class="mu sm">${VERDICT[sel.verdict][1]}</div></div>
+    <div class="mt">${Object.keys(DOMAINS).map(dk => `<span class="pill ${sel.met.includes(dk) ? 'yes' : ''}">${sel.met.includes(dk) ? '✓' : '○'} ${esc(DOMAINS[dk])}</span>`).join('')}<span class="pill ${sel.interf ? 'yes' : ''}">${sel.interf ? '✓' : '○'} Got in the way of your day</span></div>
+    <div style="overflow-x:auto"><table class="tbl cp"><tr><th>Symptom</th><th>Week before</th><th>Days 4–10</th><th>Rise</th><th>Met</th></tr>${sel.items.map(x => `<tr><td>${esc(x.it.n)}</td>${x.enough ? `<td>${f1(x.pm)}</td><td>${f1(x.qm)}</td><td>${Math.round(x.el)}%</td><td>${x.ok ? '<b class="good">✓</b>' : '<span class="mu" title="' + (x.el < 30 ? 'rise under 30%' : !x.clr ? 'didn\'t clear after' : 'not moderate on 2 days') + '">–</span>'}</td>` : `<td colspan="4" class="mu sm">not enough ratings (${x.na}/${x.nb} days)</td>`}</tr>`).join('')}</table></div>` : ''}
+   <div class="row mt"><button class="btn g" onclick="go('report')">Summary for my GP</button></div></div>
+  <div class="card"><h3>Symptom matrix</h3><div class="mu sm">Average rating for each symptom by day around your period, across all cycles. Darker is more severe.</div>
+   <div class="mx"><table class="mxt hm6"><tr><th></th>${heatK.map(k => `<th>${k > 0 ? '+' + k : k}</th>`).join('')}</tr>${ITEMS.concat(FIB).map(it => `<tr><td>${esc(it.n)}</td>${heatK.map(k => { const v = hv(k, it); return `<td class="${v == null ? '' : 'h' + Math.round(v)}">${v == null ? '' : f1(v)}</td>`; }).join('')}</tr>`).join('')}</table></div></div>
+  <div class="card"><h3>By phase</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>Phase</th><th>Days</th><th>Mood</th><th>Anx.</th><th>PMDD</th><th>Phys.</th></tr>${pt.map(r => `<tr><td style="white-space:nowrap"><span class="dot" style="background:${PHASES[r.ph].c}"></span>${PHASES[r.ph].n.split(' ')[0]}</td><td>${r.n}</td><td>${r.md != null ? f1(r.md) : '–'}</td><td>${r.ax != null ? f1(r.ax) : '–'}</td><td>${r.pm != null ? f1(r.pm) : '–'}</td><td>${r.py != null ? f1(r.py) : '–'}</td></tr>`).join('')}</table></div>
+   ${chart({ label: 'PMDD score by phase', span: 4, ymin: 1, ymax: 6, yfmt: v => f1(v), layers: [{ type: 'bars', base: 1, pts: pt.map((r, i) => r.pm == null ? null : { x: i, y: r.pm, c: PHASES[r.ph].c }) }], xl: pt.map((r, i) => ({ x: i, t: PHASES[r.ph].n.split(' ')[0], a: 'middle' })) })}<div class="mu sm">Mood is 1–5 (higher is better); the others are 1–6 (higher is worse).</div></div>
+  <div class="card"><h3>Last 90 days</h3>${(() => { const from = sh(ds(0), -89), dl = Array.from({ length: 90 }, (_, i) => sh(from, i)); return chart({ label: 'Last 90 days', span: 89, layers: S.starts.filter(s => s >= from).map(s => ({ type: 'v', x: dd(from, s), c: PHASES.men.c, w: 2, dash: false })).concat([{ type: 'line', u: '1-6', c: OCOL.pmdd, w: 2.6, pts: dl.map((d, i) => { const y = OUTCOMES.pmdd.f(d); return y == null ? null : { x: i, y }; }) }, { type: 'line', u: '1-5', c: OCOL.mood, w: 2, pts: dl.map((d, i) => { const y = OUTCOMES.mood.f(d); return y == null ? null : { x: i, y }; }) }]), xl: [{ x: 0, t: shortD(from) }, { x: 89, t: 'Today' }] }) + legend([{ c: OCOL.pmdd, n: 'PMDD score' }, { c: OCOL.mood, n: 'Mood' }, { c: PHASES.men.c, n: 'Period start' }]); })()}</div>`;
+}
+const psel = k => { PSEL = PSEL.includes(k) ? PSEL.filter(x => x !== k) : PSEL.concat([k]); render(); };
+
+/* ---------- FOOD ---------- */
+function divChart(rows, dir) {
+  const W = 320, rh = 26, L = 118, R = 14, H = rows.length * rh + 22, mx = Math.max(1, ...rows.map(r => Math.max(Math.abs(r.a.lo || 0), Math.abs(r.a.hi || 0)))), X = v => L + (W - L - R) / 2 + v / mx * (W - L - R) / 2, z = X(0);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;margin-top:8px" role="img" aria-label="Difference on days with each item"><path d="M${z} 4V${H - 18}" stroke="var(--mu)" stroke-width="1.5"/>
+   ${rows.map((r, i) => { const y = 8 + i * rh, a = r.a, worse = a.diff * dir > 0, col = a.lo > 0 || a.hi < 0 ? (worse ? '#D9622B' : '#4C9F70') : '#A5ACA0';
+     return `<text x="0" y="${y + 13}" font-size="11" fill="var(--ink)">${esc(r.i + ' ' + r.n).slice(0, 20)}</text>${a.diff == null ? `<text x="${z + 4}" y="${y + 13}" font-size="10" fill="var(--mu)">not enough days</text>` : `<rect x="${Math.min(z, X(a.diff)).toFixed(1)}" y="${y + 3}" width="${Math.abs(X(a.diff) - z).toFixed(1)}" height="12" rx="3" fill="${col}"/><path d="M${X(a.lo).toFixed(1)} ${y + 9}H${X(a.hi).toFixed(1)}" stroke="var(--ink)" stroke-width="1.4"/><path d="M${X(a.lo).toFixed(1)} ${y + 5}V${y + 13}M${X(a.hi).toFixed(1)} ${y + 5}V${y + 13}" stroke="var(--ink)" stroke-width="1.4"/>`}`; }).join('')}
+   <text x="${L}" y="${H - 4}" font-size="10" fill="var(--mu)">${dir > 0 ? '← lower' : '← worse'}</text><text x="${W - R}" y="${H - 4}" font-size="10" text-anchor="end" fill="var(--mu)">${dir > 0 ? 'higher (worse) →' : 'better →'}</text></svg>`;
+}
+function vFood() {
+  const o = OUTCOMES[FO], fl = loggedDays().filter(d => S.days[d].fd != null).length;
+  const rows = S.foods.map(f => ({ id: f.id, n: f.n, i: f.i, tag: false })).concat(S.tags.map(t => ({ id: t.id, n: t.n, i: t.i, tag: true }))).map(r => Object.assign(r, { a: assoc(r.id, r.tag, FO, FL) }));
+  const shown = rows.filter(r => r.a.n1 >= 3 && r.a.n0 >= 3).sort((a, b) => (b.a.diff == null ? -9 : b.a.diff * o.dir) - (a.a.diff == null ? -9 : a.a.diff * o.dir));
+  const byPh = S.foods.map(f => { const r = { f }; PHASE_ORDER.forEach(ph => { const ds_ = loggedDays().filter(d => S.days[d].fd != null && (where(d) || {}).ph === ph); r[ph] = ds_.length ? ds_.filter(d => S.days[d].fd[f.id]).length / ds_.length : null; }); return r; });
+  return coachStrip() + `<div class="card"><h2 style="margin:0">Food and how you feel</h2><div class="mu">For each food group: how your ${o.l} differed on days you had it, compared within the same part of your cycle, so premenstrual cravings don't fake a link. ${fl} days of food logged.</div>
+   <div class="row mt" style="gap:6px">${Object.keys(OUTCOMES).map(k => chip(`FO='${k}';render()`, OUTCOMES[k].n, FO === k, OCOL[k])).join('')}</div>
+   <div class="row mt" style="gap:6px">${chip('FL=0;render()', 'Same day', FL === 0, '')}${chip('FL=1;render()', 'Next day', FL === 1, '')}</div>
+   ${shown.length ? divChart(shown, o.dir) + `<div class="mu sm">Bars show the difference in your ${o.l} (${o.u} scale) ${FL ? 'the day after' : 'on days'} you had each one. The line is the likely range: a bar is coloured only when that whole range sits on one side of zero.</div>` : '<div class="note">Needs at least a couple of weeks of food groups and ratings before links can show.</div>'}</div>
+  <div class="card"><h3>The numbers</h3><table class="tbl"><tr><th></th><th>Had / not</th><th>Difference</th><th></th></tr>${rows.map(r => { const l = assocLabel(r.a, o.dir); return `<tr><td>${esc(r.i)} ${esc(r.n)}</td><td>${r.a.n1} / ${r.a.n0}</td><td>${r.a.diff == null ? '–' : `<b>${sg(r.a.diff, 2)}</b><div class="mu sm">${sg(r.a.lo, 1)} to ${sg(r.a.hi, 1)}</div>`}</td><td class="${l.c} sm">${l.t}</td></tr>`; }).join('')}</table>
+   <div class="mu sm mt">A link isn't proof that one causes the other. With ${rows.length} things compared, one or two can look linked by chance, so the ones that keep showing up over several cycles are the ones to trust. If you try cutting something out, do it for a whole cycle or two, then look again.</div></div>
+  <div class="card"><h3>What you eat in each phase</h3><div class="mu sm">Share of logged days you had each food group. Big jumps in the premenstrual week often mean cravings.</div>
+   <div style="overflow-x:auto"><table class="tbl"><tr><th></th>${PHASE_ORDER.map(ph => `<th><span class="dot" style="background:${PHASES[ph].c}"></span>${PHASES[ph].n.split(' ')[0]}</th>`).join('')}</tr>${byPh.map(r => { const base = mean(['fol', 'lut'].map(p => r[p]).filter(v => v != null)); return `<tr><td>${esc(r.f.i)} ${esc(r.f.n)}</td>${PHASE_ORDER.map(ph => `<td class="${ph === 'pre' && r.pre != null && base != null && r.pre - base >= 0.15 ? 'bad' : ''}">${r[ph] == null ? '–' : pc(r[ph]) + '%'}</td>`).join('')}</tr>`; }).join('')}</table></div></div>`;
+}
+
+/* ---------- REPORT: a page to print or show a GP ---------- */
+function vReport() {
+  const s = stats(), fr = frames().filter(f => f.verdict !== 'data'), ldays = loggedDays(), p = prediction();
+  const avgItem = (it, pre) => { const v = []; S.starts.forEach(N => { for (let i = pre ? -7 : 3; i <= (pre ? -1 : 9); i++) { const y = rOf(sh(N, i), it.k); if (y != null) v.push(y); } }); return v.length ? mean(v) : null; };
+  const links = S.foods.map(f => ({ f, a: assoc(f.id, false, 'pmdd', 0) })).filter(x => x.a.diff != null && x.a.n1 >= 5 && x.a.n0 >= 5 && (x.a.lo > 0 || x.a.hi < 0));
+  return `<div class="card rep"><div class="row sb noprint"><button class="chip" onclick="go('patterns')">‹ Back</button><button class="btn" onclick="window.print()">Print or save as PDF</button></div>
+   <h2 class="mt">Cycle and symptom summary</h2><div class="mu">${S.cfg.name ? esc(S.cfg.name) + ' · ' : ''}Prepared ${prettyY(ds(0))} from daily self-ratings in Cycle Matrix</div>
+   <table class="tbl"><tr><td>Days with ratings</td><td><b>${ldays.length}</b>${ldays.length ? ` (${prettyY(ldays[0])} to ${prettyY(ldays[ldays.length - 1])})` : ''}</td></tr><tr><td>Periods logged</td><td><b>${S.starts.length}</b></td></tr>
+    <tr><td>Cycle length</td><td><b>${s.n ? f1(s.avg) + ' days' : '–'}</b>${s.n ? ` (range ${s.min}–${s.max}, ${s.n} complete)` : ''}</td></tr><tr><td>Period length</td><td><b>${f1(s.plen)} days</b></td></tr>${p ? `<tr><td>Next period expected</td><td><b>${prettyY(p.next)}</b></td></tr>` : ''}</table>
+   <h3 class="mt">Premenstrual pattern (C-PASS method)</h3>
+   ${fr.length ? `<table class="tbl"><tr><th>Period start</th><th>Result</th><th>Symptom areas met</th></tr>${fr.map(f => `<tr><td>${prettyY(f.N)}</td><td>${VERDICT[f.verdict][0]}</td><td>${f.met.length}/11${f.core.length ? ', incl. mood' : ''}${f.interf ? ', with impact' : ''}</td></tr>`).join('')}</table>` : '<div class="mu">Not enough ratings around a period start yet.</div>'}
+   <h3 class="mt">Average rating: week before period vs days 4–10</h3><table class="tbl"><tr><th>Symptom (1–6)</th><th>Before</th><th>After</th></tr>${ITEMS.concat(FIB).map(it => { const a = avgItem(it, true), b = avgItem(it, false); return `<tr><td>${esc(it.n)}</td><td><b>${a == null ? '–' : f1(a)}</b></td><td>${b == null ? '–' : f1(b)}</td></tr>`; }).join('')}</table>
+   <div class="mt">${chart({ label: 'PMDD score around period start', span: 23, ymin: 1, ymax: 6, yfmt: v => f1(v), layers: [{ type: 'zone', x0: 6.5, x1: 13.5, c: PHASES.pre.c, o: 0.12 }, { type: 'zone', x0: 16.5, x1: 23, c: PHASES.fol.c, o: 0.12 }, { type: 'v', x: 13.5, c: PHASES.men.c, w: 2, dash: false }, { type: 'line', c: OCOL.pmdd, w: 3, pts: aligned('pmdd').map(a => a.y == null ? null : { x: kx(a.k), y: a.y }) }], xl: [{ x: 0, t: '−14 days' }, { x: 13.5, t: 'period starts', a: 'middle' }, { x: 23, t: '+10' }] })}<div class="mu sm">Average of the mood, energy, sleep, appetite and coping items, by day around period onset.</div></div>
+   ${(() => { const a = aligned('areas').filter(q => q.y != null); return a.length >= 5 ? `<div class="mt">${chart({ label: 'Pain areas around period start', span: 23, ymin: 0, yfmt: v => f1(v), layers: [{ type: 'zone', x0: 6.5, x1: 13.5, c: PHASES.pre.c, o: 0.12 }, { type: 'v', x: 13.5, c: PHASES.men.c, w: 2, dash: false }, { type: 'line', c: OCOL.areas, w: 3, pts: aligned('areas').map(q => q.y == null ? null : { x: kx(q.k), y: q.y }) }], xl: [{ x: 0, t: '−14 days' }, { x: 13.5, t: 'period starts', a: 'middle' }, { x: 23, t: '+10' }] })}<div class="mu sm">Average number of body areas in pain (out of ${REGIONS.length}), by day around period onset.</div></div>` : ''; })()}
+   ${S.meds.map(m => { const ch = doseChanges(m.id), ev = Object.keys(S.days).sort().filter(d => S.days[d].ev && S.days[d].ev.some(e => e.toLowerCase().startsWith(m.n.toLowerCase()))), cyc = medCycles(m.id).filter(c => c.dose != null); if (!ch.length && !ev.length && !cyc.length) return '';
+     return `<h3 class="mt">${esc(m.n)}</h3>${cyc.length ? `<table class="tbl"><tr><th>Period start</th><th>Avg dose, week before</th><th>PMDD score, week before</th></tr>${cyc.map(c => `<tr><td>${prettyY(c.N)}</td><td>${f1(c.dose)} ${esc(m.u)}</td><td>${c.score != null ? f1(c.score) : '–'}</td></tr>`).join('')}</table>` : ''}
+      ${ch.length || ev.length ? `<div class="mu sm mt">Changes: ${ev.map(d => prettyY(d) + ' (' + S.days[d].ev.filter(e => e.toLowerCase().startsWith(m.n.toLowerCase())).join(', ') + ')').concat(ch.slice(-12).map(c => `${shortD(c.d)} ${c.from}→${c.to} ${esc(m.u)}`)).join(' · ')}</div>` : ''}`; }).join('')}
+   ${links.length ? `<h3 class="mt">Food groups linked with symptoms (same day, phase-adjusted)</h3>${links.map(x => `<div>${esc(x.f.i)} ${esc(x.f.n)}: ${sg(x.a.diff, 2)} on the 1–6 scale (${x.a.n1} days with, ${x.a.n0} without)</div>`).join('')}` : ''}
+   <div class="mu sm mt">Self-reported daily ratings on a 1–6 scale${Object.values(S.days).some(x => x.im) ? '; days imported from written notes have estimated ratings and are excluded from the C-PASS check' : ''}. The premenstrual check follows the published C-PASS criteria (Eisenlohr-Moul et al., Am J Psychiatry 2017): ≥30% premenstrual rise relative to the range used, ≥2 premenstrual days at 4+, and no day above 3 on days 4–10; PMDD pattern = 5+ DSM-5 symptom areas including one mood area, with impact. This is a summary for discussion, not a diagnosis.</div></div>`;
+}
+
+/* ---------- MEDS ---------- */
+let MM = null, DM = 7;
+function recentDoses(mid, before) { const out = []; Object.keys(S.days).sort().reverse().forEach(d => { if (d >= before) return; const v = doseOf(d, mid); if (v != null && v > 0 && !out.includes(v) && out.length < 4) out.push(v); }); return out.sort((a, b) => a - b); }
+function medCycles(mid) { return S.starts.map(N => { const xs = [], ys = []; for (let i = -7; i <= -1; i++) { const d = sh(N, i), v = doseOf(d, mid), y = OUTCOMES.pmdd.f(d); if (v != null) xs.push(v); if (y != null) ys.push(y); } const f = frames().find(q => q.N === N); return { N, dose: xs.length ? mean(xs) : null, score: ys.length ? mean(ys) : null, verdict: f ? f.verdict : null }; }); }
+function vMeds() {
+  if (!S.meds.length) return coachStrip() + '<div class="card"><h2>Medication</h2><div class="mu mt">Add a medicine in Settings to track its daily dose.</div></div>';
+  const m = S.meds.find(x => x.id === MM) || S.meds[0], logged = Object.keys(S.days).filter(d => doseOf(d, m.id) != null).sort(), vals = logged.map(d => doseOf(d, m.id)), ch = doseChanges(m.id);
+  const evDays = Object.keys(S.days).sort().filter(d => S.days[d].ev && S.days[d].ev.some(e => e.toLowerCase().startsWith(m.n.toLowerCase())));
+  const from = sh(ds(0), -89), dl = Array.from({ length: 90 }, (_, i) => sh(from, i));
+  const ph = PHASE_ORDER.map(p => { const v = logged.filter(d => (where(d) || {}).ph === p).map(d => doseOf(d, m.id)); return { p, n: v.length, avg: v.length ? mean(v) : null }; });
+  const modes = [[0, 'Same day'], [1, 'Day before'], [7, '7-day average']], cyc = medCycles(m.id).filter(c => c.dose != null);
+  return coachStrip() + `<div class="card"><h2 style="margin:0">Medication</h2>${S.meds.length > 1 ? `<div class="row mt" style="gap:6px">${S.meds.map(x => chip(`MM='${x.id}';render()`, x.n, x.id === m.id, '#5B7FA6')).join('')}</div>` : ''}
+   <div class="tiles"><div class="tile"><b>${vals.length ? vals[vals.length - 1] + ' ' + esc(m.u) : '–'}</b><span>Latest, ${logged.length ? shortD(logged[logged.length - 1]) : 'none yet'}</span></div><div class="tile"><b>${vals.length ? f1(mean(vals)) : '–'}</b><span>Average dose, ${esc(m.u)}</span></div><div class="tile"><b>${vals.length ? Math.min(...vals) + '–' + Math.max(...vals) : '–'}</b><span>Range, ${esc(m.u)}</span></div>
+   <div class="tile"><b>${logged.length}</b><span>Days logged</span></div><div class="tile"><b>${ch.length}</b><span>Day-to-day changes</span></div><div class="tile"><b>${evDays.length}</b><span>Noted changes</span></div></div>
+   ${chart({ label: 'Dose and PMDD score, last 90 days', span: 89, layers: S.starts.filter(s => s >= from).map(s => ({ type: 'v', x: dd(from, s), c: PHASES.men.c, w: 2, dash: false })).concat(evDays.filter(d => d >= from).map(d => ({ type: 'v', x: dd(from, d), c: '#5B7FA6', w: 1.6 }))).concat([{ type: 'bars', u: 'dose', c: '#9DB4CF', bw: 3, pts: dl.map((d, i) => { const v = doseOf(d, m.id); return v == null ? null : { x: i, y: v }; }) }, { type: 'line', u: '1-6', c: OCOL.pmdd, w: 2.6, pts: dl.map((d, i) => { const y = OUTCOMES.pmdd.f(d); return y == null ? null : { x: i, y }; }) }]), xl: [{ x: 0, t: shortD(from) }, { x: 89, t: 'Today' }] })}
+   ${legend([{ c: '#9DB4CF', n: esc(m.n) + ' dose' }, { c: OCOL.pmdd, n: 'PMDD score' }, { c: PHASES.men.c, n: 'Period start' }, { c: '#5B7FA6', n: 'Noted change' }])}<div class="mu sm">Dose and score use different scales, so each is drawn to its own range.</div></div>
+  <div class="card"><h3>Dose by phase</h3><table class="tbl"><tr><th>Phase</th><th>Days</th><th>Average dose</th></tr>${ph.map(r => `<tr><td style="white-space:nowrap"><span class="dot" style="background:${PHASES[r.p].c}"></span>${PHASES[r.p].n}</td><td>${r.n}</td><td>${r.avg != null ? f1(r.avg) + ' ' + esc(m.u) : '–'}</td></tr>`).join('')}</table></div>
+  <div class="card"><h3>Dose and how you feel</h3><div class="mu sm">Inside each part of your cycle, do days with a higher dose go with lower or higher scores? Shown per ${m.step} ${esc(m.u)}. Comparing within the same part of the cycle matters because you vary the dose across it.</div>
+   <div class="row mt" style="gap:6px">${modes.map(([k, n]) => chip(`DM=${k};render()`, n, DM === k, '')).join('')}</div>
+   <table class="tbl"><tr><th></th><th>Per ${m.step} ${esc(m.u)}</th><th></th></tr>${Object.keys(OUTCOMES).map(k => { const a = doseLink(m.id, k, DM), l = a.b == null ? { t: a.n < 10 ? 'Need more days' : 'Dose hasn\'t varied enough', c: 'mu' } : assocLabel({ n1: 9, n0: 9, diff: a.diff, lo: a.lo, hi: a.hi }, OUTCOMES[k].dir);
+     return `<tr><td>${OUTCOMES[k].n} <span class="mu sm">(${OUTCOMES[k].u})</span></td><td>${a.b == null ? '–' : `<b>${sg(a.diff, 2)}</b><div class="mu sm">${sg(a.lo, 1)} to ${sg(a.hi, 1)}</div>`}</td><td class="${l.c} sm">${l.t.replace('Linked with', 'Higher dose, ')}</td></tr>`; }).join('')}</table>
+   <div class="mu sm mt">Read this with care. If you take more on days you already feel worse, a higher dose will look "linked with worse" even when it's helping. The 7-day average is the fairest test for an SSRI. Please don't change your dose based on this; take it to whoever prescribes it.</div></div>
+  <div class="card"><h3>Cycle by cycle</h3>${cyc.length ? `<table class="tbl"><tr><th>Period start</th><th>Avg dose, week before</th><th>PMDD score, week before</th><th>Pattern</th></tr>${cyc.map(c => `<tr><td>${shortD(c.N)}</td><td>${f1(c.dose)} ${esc(m.u)}</td><td>${c.score != null ? f1(c.score) : '–'}</td><td class="sm">${c.verdict ? VERDICT[c.verdict][0] : '–'}</td></tr>`).join('')}</table>` : '<div class="mu mt">Appears once you have doses logged in the week before a period.</div>'}
+   ${ch.length || evDays.length ? `<div class="mt"><b>Changes</b>${evDays.map(d => `<div class="meal"><span>${prettyY(d)}</span><span class="sm">${S.days[d].ev.map(esc).join(', ')}</span></div>`).join('')}${ch.slice(-15).reverse().map(c => `<div class="meal"><span>${prettyY(c.d)}</span><span class="sm">${c.from} → ${c.to} ${esc(m.u)}</span></div>`).join('')}</div>` : ''}</div>`;
+}
+
+/* ---------------------------------------------------------------------
+   IMPORT FROM NOTES
+   Paste a diary or summary. Dates are read day-first (UK). Pulled out: period starts and how long bleeding lasted; symptom words on dated
+   lines, turned into 1-6 ratings using nearby severity words ("extreme" 6, "severe"/"seriously" 5, "moderate" 4, "mild" 3, otherwise 4);
+   medication doses in mg and dose changes. Ratings made this way are marked as estimates and kept out of the PMDD check.
+   Sections of predictions or advice, and any future date, are skipped. Nothing you've already entered is overwritten.
+   --------------------------------------------------------------------- */
+const LEX = [
+  [/negative thoughts|dark thoughts|depress|\bsad\b|sadness|fed up|\bflat\b|low mood|mood drops?|feeling down|despair|\bblue\b/i, 'dep'], [/hopeless/i, 'hop'], [/worthless|guilt/i, 'wor'],
+  [/anxi|on edge|\btense\b|tension|panic|nervous|worried/i, 'anx'], [/\bcry|crying|tearful|\btears\b|sudden sadness|mood swing/i, 'swg'], [/rejection|easily hurt/i, 'rej'],
+  [/irritab|angry|anger|\brage\b|snappy|short.tempered/i, 'irr'], [/conflict|argument|arguing/i, 'con'], [/motivation|lost interest|no interest|withdrawn|can'?t be bothered/i, 'int'],
+  [/concentrat|focus|brain fog|foggy/i, 'foc'], [/tired|fatigue|exhaust|lethargic|low energy|no energy|drained/i, 'tir'], [/overeat|appetite|binge/i, 'app'], [/craving/i, 'cra'],
+  [/oversle|sleeping more|slept (?:a lot|more)/i, 'hyp'], [/insomnia|can'?t sleep|couldn'?t sleep|night sweats|waking up|poor sleep/i, 'ins'],
+  [/overwhelm|resilience|can'?t cope|unable to cope/i, 'ovw'], [/overstimulat|sensory overload|noise|too loud|bright light|clothes feel/i, 'sen'], [/out of control/i, 'ctl'],
+  [/breast|boob/i, 'brs'], [/bloat|swollen|swelling|weight gain/i, 'blt'], [/headache|migraine/i, 'hed'],
+  [/joint|\bhips?\b|\bknees?\b|back pain|muscle|calves|\bneck\b|aching|\baches?\b|\bpain\b/i, 'pai'], [/cramp|period pain/i, 'crm'],
+  [/\bpain\b|aching|\baches?\b/i, 'pan'], [/stiff/i, 'stf'], [/tender|sore to (?:the )?touch|hurts to touch/i, 'tch'], [/tingl|numb|pins and needles|burning/i, 'tng'], [/unrefresh|woke (?:up )?(?:tired|exhausted)/i, 'unr'],
+  [/after (?:any )?activity|crash(?:ed)? after|post.exertion/i, 'exh'], [/memory|forgetful|word.finding|can'?t find (?:the )?words/i, 'mem'], [/\bibs\b|bowel|stomach (?:ache|upset|pain)|nausea|diarrh|constipat/i, 'gut'], [/restless legs?|twitchy legs?/i, 'rls']];
+/* body areas named on a dated line */
+const RLEX = [[/\bneck\b/i, 'neck'], [/\bjaw\b/i, 'jaw'], [/shoulder/i, 'shoulders'], [/upper back/i, 'upperback'], [/lower back|\bback\b/i, 'lowerback'], [/\bchest\b/i, 'chest'], [/\barms?\b/i, 'arms'], [/hands?|wrists?/i, 'hands'], [/\bhips?\b/i, 'hips'], [/thighs?/i, 'thighs'], [/\bknees?\b/i, 'knees'], [/calves|calf|shins?/i, 'calves'], [/\bfeet\b|\bfoot\b|ankles?/i, 'feet']];
+const SEVW = [[/less (?:extreme|severe)/i, 5], [/extreme|excruciating|unbearable|worst/i, 6], [/severe|seriously|intense|really bad|awful|horrendous/i, 5], [/moderate/i, 4], [/mild|slight|subtle|a bit|a little/i, 3]];
+const CHG = [[/increas|raise|rais|upp(?:ed|ing)/i, 'increased'], [/decreas|reduc|lower|drop(?:ped)? (?:my|the|your)? ?dose/i, 'decreased'], [/stopp|stopped|came off/i, 'stopped'], [/start(?:ed|ing)? (?:on|taking)/i, 'started']];
+const STOP = /predict|forecast|strategy|phase-by-phase|what to do|topics to discuss|discuss with|anticipate|actionable/i;
+function sevNear(line, idx) { const back = line.slice(Math.max(0, idx - 28), idx + 2); for (const [re, v] of SEVW) if (re.test(back)) return v; return null; }
+function parseNotes(text) {
+  const today = ds(0), out = { days: {}, starts: [], meds: [], future: 0, stoppedAt: null, lines: 0 }; let year = +today.slice(0, 4), stop = false;
+  const D = (dd_, mm, yy) => { let y = yy ? (String(yy).length === 2 ? 2000 + +yy : +yy) : year; if (yy) year = y; const d = +dd_, m = +mm; if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31)) return null; let s = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; if (!yy && s > today) s = `${y - 1}${s.slice(4)}`; return isNaN(new Date(s + 'T12:00:00')) ? null : s; };
+  const day = d => out.days[d] || (out.days[d] = { fl: 0, md: null, r: {}, nt: [], dz: {}, ev: [], im: 0, pl: null });
+  const DRE = /(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?/g;
+  text.split(/\r?\n/).forEach(raw => {
+    const line = raw.trim(); if (!line) return; if (STOP.test(line) && line.length < 90) { if (!stop) out.stoppedAt = line.slice(0, 60); stop = true; } if (stop) return;
+    /* dates in this line, with ranges expanded, and which of them belong to a medication mention */
+    const found = []; let m; DRE.lastIndex = 0; while ((m = DRE.exec(line))) { const s = D(m[1], m[2], m[3]); if (s) found.push({ s, i: m.index, end: m.index + m[0].length }); }
+    if (!found.length) return; out.lines++;
+    const dates = [], medDates = [];
+    found.forEach((f, j) => { const nx = found[j + 1], between = nx ? line.slice(f.end, nx.i) : '';
+      const before = line.slice(Math.max(0, f.i - 45), f.i).toLowerCase(), isMed = KNOWN_MEDS.some(k => before.includes(k)) || /increas|decreas|reduc|dose|stopp/.test(before);
+      (isMed ? medDates : dates).push(f.s);
+      if (nx && /^\s*(?:–|-|to)\s*~?\s*$/.test(between) && !isMed) { let x = sh(f.s, 1); let n = 0; while (x < nx.s && n < 31) { dates.push(x); x = sh(x, 1); n++; } } });
+    const keep = a => { const k = []; a.forEach(d => { if (d > today) out.future++; else if (!k.includes(d)) k.push(d); }); return k; };
+    const sd = keep(dates), md = keep(medDates);
+    /* period start + bleeding */
+    if (/period|bleed|menstrua/i.test(line) && /start/i.test(line) && sd.length) {
+      const st = sd[0]; if (!out.starts.includes(st)) out.starts.push(st); const em = line.match(/end(?:ing|ed|s)?\s*(?:on\s*)?~?\s*(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?/i), lm = line.match(/lasted\s*~?\s*(\d{1,2})/i);
+      let end = em ? D(em[1], em[2], em[3]) : null; if (!end && lm) end = sh(st, +lm[1] - 1); if (!end || end < st || dd(st, end) > 9) end = sh(st, 4);
+      for (let x = st, i = 0; x <= end && x <= today; x = sh(x, 1), i++) { const o = day(x); o.fl = i < 2 ? 3 : 2; }
+      day(st).nt.push('Period start (from notes)'); return;
+    }
+    /* medication */
+    KNOWN_MEDS.forEach(name => { const re = new RegExp(name, 'i'); if (!re.test(line)) return; const Name = name[0].toUpperCase() + name.slice(1); if (!out.meds.includes(Name)) out.meds.push(Name);
+      const dm = line.match(new RegExp(name + '\\D{0,24}?(\\d+(?:\\.\\d+)?)\\s*mg', 'i')), when = md[0] || sd[0];
+      if (dm && when) day(when).dz[Name] = +dm[1];
+      const ch = CHG.find(c => c[0].test(line)); if (ch && when) { const e = `${Name} ${ch[1]}`; if (!day(when).ev.includes(e)) day(when).ev.push(e); } });
+    /* symptoms on the line's own dates */
+    if (!sd.length) return; const hits = {};
+    LEX.forEach(([re, k]) => { const g = new RegExp(re.source, 'gi'); let mm; while ((mm = g.exec(line))) { const v = sevNear(line, mm.index) || 4; hits[k] = Math.max(hits[k] || 0, v); } });
+    const ks = Object.keys(hits), regs = /pain|ach|hurt|sore|stiff/i.test(line) ? RLEX.filter(([re]) => re.test(line)).map(r => r[1]) : []; if (!ks.length) return;
+    const emo = ks.filter(k => ['dep', 'hop', 'wor', 'anx', 'swg', 'irr', 'ovw'].includes(k)).map(k => hits[k]), worst = emo.length ? Math.max(...emo) : 0;
+    const good = /good mood|happy|positive|great day/i.test(line) && !worst;
+    sd.forEach(d => { const o = day(d); ks.forEach(k => { o.r[k] = Math.max(o.r[k] || 0, hits[k]); }); o.im = 1; if (regs.length) { o.pl = o.pl || {}; regs.forEach(k => { o.pl[k] = 1; }); } if (worst) o.md = Math.min(o.md || 5, worst >= 5 ? 1 : worst >= 4 ? 2 : 3); else if (good) o.md = o.md || 4; const snip = line.replace(/^[^A-Za-z(]+/, '').slice(0, 160); if (!o.nt.includes(snip)) o.nt.push(snip); });
+  });
+  out.starts.sort(); return out;
+}
+/* bring parsed notes, or another export, into the current data: only fills gaps */
+function mergeIn(src) {
+  const r = { days: 0, ratings: 0, starts: 0, doses: 0, events: 0 }, medId = name => { let m = S.meds.find(x => x.n.toLowerCase() === String(name).toLowerCase() || x.id === name); if (!m) { m = { id: 'm_' + String(name).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12), n: String(name).slice(0, 26), u: 'mg', step: 25 }; S.meds.push(m); } return m.id; };
+  (src.meds || []).forEach(n => medId(typeof n === 'string' ? n : n.n));
+  (src.foods || []).forEach(f => { if (!S.foods.some(x => x.id === f.id)) S.foods.push(f); }); (src.tags || []).forEach(t => { if (!S.tags.some(x => x.id === t.id)) S.tags.push(t); });
+  (src.starts || []).forEach(s => { if (!S.starts.includes(s)) { S.starts.push(s); r.starts++; } }); S.starts.sort();
+  Object.keys(src.days || {}).forEach(d => { const s = src.days[d], had = !!S.days[d], x = dayOf(d); let ch = false, addedR = false;
+    if (!x.fl && s.fl) { x.fl = s.fl; ch = true; } if (x.md == null && s.md != null) { x.md = s.md; ch = true; }
+    Object.keys(s.r || {}).forEach(k => { if (x.r[k] == null) { x.r[k] = s.r[k]; r.ratings++; addedR = true; ch = true; } });
+    if (s.fd && x.fd == null) { x.fd = Object.assign({}, s.fd); ch = true; } Object.keys(s.tg || {}).forEach(k => { if (!x.tg[k]) { x.tg[k] = 1; ch = true; } });
+    if (x.sl == null && s.sl != null) { x.sl = s.sl; ch = true; }
+    if (s.pl && x.pl == null) { x.pl = Object.assign({}, s.pl); ch = true; }
+    Object.keys(s.dz || {}).forEach(k => { const id = S.meds.some(m => m.id === k) ? k : medId(k); if (x.dz[id] == null) { x.dz[id] = s.dz[k]; r.doses++; ch = true; } });
+    (s.ev || []).forEach(e => { if (!x.ev.includes(e)) { x.ev.push(e); r.events++; ch = true; } });
+    const nt = Array.isArray(s.nt) ? s.nt.join(' | ') : s.nt; if (nt && !x.nt.includes(nt)) { x.nt = (x.nt ? x.nt + ' | ' : '') + nt; x.nt = x.nt.slice(0, 400); ch = true; }
+    if (addedR && s.im) x.im = 1; if (ch && !had) r.days++; });
+  return r;
+}
+
+/* ---------------------------------------------------------------------
+   TRENDS: everything you track, over time, together.
+   1. a graph of any mix of things (cycle phases shaded behind, period starts marked, estimated days hollow)
+   2. "everything at a glance": one row per thing, one column per day
+   3. "what moves together": pick one thing, see everything else ranked by how closely it tracks it, same day or next day,
+      with your cycle taken out (both are compared to their own average for that part of the cycle first)
+   --------------------------------------------------------------------- */
+let TSEL = null, TRR = 0, TT = null, TLAG = 0, TALL = false;
+function catalogue() {
+  const s = [], add = (k, n, g, u, f, c, bin) => s.push({ k, n, g, u, f, c, bin: !!bin });
+  add('pmdd', 'PMDD score', 'Overall', '1-6', OUTCOMES.pmdd.f, OCOL.pmdd); add('body', 'Pain and body score', 'Overall', '1-6', OUTCOMES.body.f, OCOL.body); add('md', 'Mood', 'Overall', '1-5', d => S.days[d] ? S.days[d].md : null, OCOL.mood);
+  add('fl', 'Bleeding', 'Period', 'flow', d => S.days[d] && (S.days[d].fl || checkedIn(d)) ? S.days[d].fl : null, '#C2477A'); add('areas', 'Pain areas', 'Pain, body and senses', 'areas', OUTCOMES.areas.f, OCOL.areas);
+  const pal = ['#5B7FA6', '#D9622B', '#8E6BBF', '#B5524A', '#4C9F70', '#D9A400', '#2A9D8F', '#9A7B4F', '#C2477A', '#3E7CB1'];
+  ITEMS.concat(EXTRA).forEach((it, i) => add('r:' + it.k, it.n, GROUPS[it.g], '1-6', d => rOf(d, it.k), pal[i % pal.length]));
+  add('sl', 'Hours of sleep', 'Other things', 'hours', d => S.days[d] ? S.days[d].sl : null, '#3E7CB1');
+  S.meds.forEach(m => add('dz:' + m.id, m.n + ' dose', 'Medication', 'dose:' + m.id, d => doseOf(d, m.id), '#5B7FA6'));
+  S.foods.forEach(f => add('fd:' + f.id, f.i + ' ' + f.n, 'Food groups', 'yes/no', d => S.days[d] && S.days[d].fd ? (S.days[d].fd[f.id] ? 1 : 0) : null, '#4C9F70', true));
+  S.tags.forEach(t => add('tg:' + t.id, t.i + ' ' + t.n, 'Other things', 'yes/no', d => checkedIn(d) ? (S.days[d].tg[t.id] ? 1 : 0) : null, '#5B7FA6', true));
+  return s;
+}
+function trRange() { const ld = loggedDays(), first = ld.length ? ld[0] : ds(-29), today = ds(0); let from = TRR ? sh(today, -(TRR - 1)) : first; if (from < first && !TRR) from = first; return { from, to: today, span: Math.max(1, dd(from, today)) }; }
+function phaseZones(from, to) { const out = []; let cur = null; for (let d = from, i = 0; d <= to; d = sh(d, 1), i++) { const w = where(d), p = w ? w.ph : null; if (!cur || cur.p !== p) { if (cur) out.push(cur); cur = { p, x0: i - 0.5, x1: i + 0.5 }; } else cur.x1 = i + 0.5; } if (cur) out.push(cur); return out.filter(z => z.p).map(z => ({ type: 'zone', x0: Math.max(0, z.x0), x1: z.x1, c: PHASES[z.p].c, o: 0.1 })); }
+function pearson(p) { if (p.length < 3) return null; const mx = mean(p.map(q => q[0])), my = mean(p.map(q => q[1])); let a = 0, b = 0, c = 0; p.forEach(q => { a += (q[0] - mx) * (q[1] - my); b += (q[0] - mx) ** 2; c += (q[1] - my) ** 2; }); return b > 1e-9 && c > 1e-9 ? a / Math.sqrt(b * c) : null; }
+/* how closely x tracks the target, raw and with the cycle taken out (each value minus its average for that part of the cycle) */
+function together(tx, x, lag) {
+  const raw = [], st = {}; loggedDays().forEach(d => { const a = x.f(d), od = lag ? sh(d, 1) : d, b = tx.f(od); if (a == null || b == null) return; raw.push([a, b]); const w = where(od); if (!w) return; (st[stratum(w)] = st[stratum(w)] || []).push([a, b]); });
+  const res = []; let k = 0; Object.values(st).forEach(p => { if (p.length < 2) return; k++; const ma = mean(p.map(q => q[0])), mb = mean(p.map(q => q[1])); p.forEach(q => res.push([q[0] - ma, q[1] - mb])); });
+  const r = pearson(raw), ra = pearson(res), n = raw.length, ne = res.length - k; let lo = null, hi = null;
+  if (ra != null && ne > 3) { const z = Math.atanh(clamp(ra, -0.999, 0.999)), se = 1 / Math.sqrt(ne - 3); lo = Math.tanh(z - 1.96 * se); hi = Math.tanh(z + 1.96 * se); }
+  return { n, r, ra, lo, hi };
+}
+/* a score's own ingredients obviously move with it, so they're left out of its ranking */
+function partOf(t, s) { const k = s.k.startsWith('r:') ? s.k.slice(2) : null; if (!k) return false;
+  if (t.k === 'pmdd') return ITEMS.some(i => i.k === k && (i.g === 'emo' || i.g === 'beh')); if (t.k === 'body') return k === 'pai' || FIB.some(i => i.k === k); return false; }
+const strength = r => r == null ? '' : Math.abs(r) >= 0.5 ? 'strong' : Math.abs(r) >= 0.3 ? 'moderate' : Math.abs(r) >= 0.1 ? 'weak' : 'none';
+function cellClass(s, v, mx) {
+  if (v == null) return ''; if (s.u === '1-6') return 'h' + Math.round(v); if (s.u === '1-5') return 'h' + (6 - Math.round(v)); if (s.bin) return v ? 'yb' : 'yn';
+  if (s.u === 'flow') return v ? 'fl' + v : 'yn'; const r = mx > 0 ? v / mx : 0; return 'q' + Math.max(0, Math.min(4, Math.round(r * 4)));
+}
+function vTrends() {
+  const cat = catalogue(), ld = loggedDays(); if (!ld.length) return coachStrip() + '<div class="card"><h2>Trends</h2><div class="mu mt">Once you\'ve logged a few days (or imported notes), everything you track appears here over time.</div></div>';
+  const { from, to, span } = trRange(), days = Array.from({ length: span + 1 }, (_, i) => sh(from, i)), withData = cat.filter(s => s.bin ? days.some(d => s.f(d) === 1) : days.some(d => s.f(d) != null));
+  if (!TSEL) TSEL = ['pmdd', 'body', 'md'].concat(S.meds.length ? ['dz:' + S.meds[0].id] : []);
+  const sel = cat.filter(s => TSEL.includes(s.k)), mixed = new Set(sel.map(s => s.u)).size > 1, imd = d => S.days[d] && S.days[d].im;
+  const layers = phaseZones(from, to).concat(S.starts.filter(s => s >= from && s <= to).map(s => ({ type: 'v', x: dd(from, s), c: PHASES.men.c, w: 2, dash: false })));
+  sel.forEach(s => { const pts = days.map((d, i) => { const y = s.f(d); return y == null ? null : { x: i, y }; }); if (s.bin) { layers.push({ type: 'dots', u: s.u, c: s.c, r: 3, pts: pts.map(p => p && p.y ? p : null) }); return; }
+    let seg = [], last = null; pts.forEach(p => { if (!p) return; if (last != null && p.x - last > 3) { layers.push({ type: 'line', u: s.u, c: s.c, w: 2.4, pts: seg }); seg = []; } seg.push(p); last = p.x; }); if (seg.length) layers.push({ type: 'line', u: s.u, c: s.c, w: 2.4, pts: seg }); layers.push({ type: 'dots', u: s.u, c: s.c, r: 2.6, pts: pts.map((p, i) => p ? Object.assign({}, p, { c: imd(days[i]) ? 'var(--pn)' : s.c }) : null) }); });
+  const groups = [...new Set(cat.map(s => s.g))], gl = days.length > 120 ? 14 : days.length > 45 ? 7 : 3;
+  const tgt = cat.find(s => s.k === TT) || withData.find(s => s.k === 'pmdd') || withData[0], rows = tgt ? withData.filter(s => s.k !== tgt.k && !partOf(tgt, s)).map(s => Object.assign({ s }, together(tgt, s, TLAG))).filter(r => r.n >= 8 && r.ra != null).sort((a, b) => Math.abs(b.ra) - Math.abs(a.ra)) : [];
+  const mx = {}; withData.forEach(s => { const v = days.map(s.f).filter(x => x != null); mx[s.k] = v.length ? Math.max(...v) : 0; });
+  const MAXC = 120, gdays = days.slice(-MAXC);
+  return coachStrip() + `
+  <div class="card"><div class="row sb"><h2 style="margin:0">Trends</h2><div class="row" style="gap:4px">${[[30, '1M'], [90, '3M'], [180, '6M'], [0, 'All']].map(o => `<button class="chip ${TRR === o[0] ? 'on' : ''}" onclick="TRR=${o[0]};render()">${o[1]}</button>`).join('')}</div></div>
+   <div class="mu sm">${prettyY(from)} to today. Shaded by cycle phase; pink lines are period starts; hollow dots are days imported from notes. Lines break where more than 3 days weren't logged.</div>
+   ${sel.length ? chart({ label: 'Trends', span, layers, ymin: !mixed && sel[0].u === '1-6' ? 0.8 : !mixed && sel[0].u === '1-5' ? 0.8 : undefined, ymax: !mixed && sel[0].u === '1-6' ? 6.2 : !mixed && sel[0].u === '1-5' ? 5.2 : undefined, xl: [{ x: 0, t: shortD(from) }, { x: Math.round(span / 2), t: shortD(sh(from, Math.round(span / 2))) }, { x: span, t: 'Today' }] }) + legend(sel.map(s => ({ c: s.c, n: s.n }))) + (mixed ? '<div class="mu sm">Different scales, so each line is drawn to its own range: compare the shapes and timing.</div>' : '') : '<div class="mu mt">Pick something below.</div>'}
+   ${legend(PHASE_ORDER.map(k => ({ c: PHASES[k].c, n: PHASES[k].n })))}
+   ${groups.map(g => { const list = cat.filter(s => s.g === g && (TALL || withData.includes(s) || TSEL.includes(s.k))); return list.length ? `<div class="mt"><div class="mu sm"><b>${esc(g)}</b></div><div class="row" style="gap:6px;margin-top:4px">${list.map(s => chip(`tsel('${s.k}')`, s.n, TSEL.includes(s.k), s.c)).join('')}</div></div>` : ''; }).join('')}
+   <div class="row mt"><button class="chip" onclick="TALL=!TALL;render()">${TALL ? 'Only show things with data' : 'Show everything, even with no data yet'}</button>${TSEL.length ? '<button class="chip" onclick="TSEL=[];render()">Clear</button>' : ''}</div></div>
+  <div class="card"><h3>Everything at a glance</h3><div class="mu sm">One row per thing, one column per day${days.length > MAXC ? ` (the last ${MAXC} days)` : ''}. Darker is more. The top row is your cycle phase. Tap a row name to add it to the graph.</div>
+   <div class="mx"><table class="mxt tg"><tr><th></th>${gdays.map((d, i) => `<th>${i % gl === 0 ? shortD(d).replace(' ', '<br>') : ''}</th>`).join('')}</tr>
+    <tr><td>Cycle phase</td>${gdays.map(d => { const w = where(d); return `<td style="background:${w ? PHASES[w.ph].c : 'transparent'};opacity:${w ? (w.predicted ? 0.45 : 0.85) : 1}" title="${pretty(d)}${w ? ': ' + PHASES[w.ph].n : ''}">${S.starts.includes(d) ? '●' : ''}</td>`; }).join('')}</tr>
+    ${withData.map(s => `<tr><td><button class="lnk" onclick="tsel('${s.k}',true)">${esc(s.n)}</button></td>${gdays.map(d => { const v = s.f(d); return `<td class="${cellClass(s, v, mx[s.k])}${imd(d) && v != null && !s.bin && s.k !== 'fl' ? ' est' : ''}" title="${pretty(d)}: ${v == null ? 'not logged' : s.bin ? (v ? 'yes' : 'no') : (+v).toFixed(s.u === '1-6' && v % 1 ? 1 : 0)}"></td>`; }).join('')}</tr>`).join('')}</table></div>
+   <div class="mu sm">Dotted cells are estimates from imported notes. Blank means not logged.</div></div>
+  <div class="card"><h3>What moves together</h3><div class="mu sm">Pick one thing; everything else is ranked by how closely it tracks it. Each is first compared with its own usual level for that part of your cycle, so two things that both just follow your cycle don't look linked.</div>
+   <label class="mt" style="display:block">Compare everything with<select onchange="TT=this.value;render()">${withData.filter(s => !s.bin).map(s => `<option value="${s.k}" ${tgt && s.k === tgt.k ? 'selected' : ''}>${esc(s.n)}</option>`).join('')}</select></label>
+   <div class="row mt" style="gap:6px">${chip('TLAG=0;render()', 'Same day', TLAG === 0, '')}${chip('TLAG=1;render()', 'Next day', TLAG === 1, '')}</div>
+   ${rows.length ? `<table class="tbl"><tr><th></th><th>Days</th><th>Link</th><th></th></tr>${rows.slice(0, TALL ? 60 : 15).map(r => { const clear = r.lo != null && (r.lo > 0 || r.hi < 0), st = strength(r.ra);
+      return `<tr><td>${esc(r.s.n)}${TLAG ? ' <span class="mu sm">(day before)</span>' : ''}</td><td>${r.n}</td><td><b class="${clear ? (r.ra > 0 ? 'bad' : 'good') : ''}">${r.ra > 0 ? '+' : ''}${r.ra.toFixed(2)}</b><div class="mu sm">raw ${r.r == null ? '–' : (r.r > 0 ? '+' : '') + r.r.toFixed(2)}</div></td><td class="sm ${clear ? '' : 'mu'}">${st === 'none' ? 'no link' : (clear ? '' : 'maybe ') + st + (r.ra > 0 ? ', rise together' : ', move opposite')}</td></tr>`; }).join('')}</table>
+    <div class="mu sm mt">The number runs from −1 to +1: + means they rise together, − means one rises as the other falls. "Raw" ignores the cycle, and a big gap between the two means the cycle was doing most of the work. Items that make up a score are left out of that score's list. Things measured the same way (two pain items, say) will naturally go together; the surprising ones are the interesting ones. Links aren't proof of cause.</div>`
+    : '<div class="note">Needs at least 8 days where both things were logged.</div>'}</div>`;
+}
+const tsel = (k, add) => { if (!TSEL) TSEL = []; TSEL = TSEL.includes(k) && !add ? TSEL.filter(x => x !== k) : TSEL.includes(k) ? TSEL : TSEL.concat([k]); render(); if (add) scrollTo(0, 0); };
+
+/* ---------- SETTINGS ---------- */
+let CE = null;
+function listEditor(kind, arr) {
+  return `${arr.map((x, i) => `<div class="row mt"><label style="flex:0 0 58px">Icon<input value="${esc(x.i)}" maxlength="4" style="text-align:center" oninput="itemSet('${kind}',${i},'i',this.value)"></label><label style="flex:2 1 120px">Name<input value="${esc(x.n)}" maxlength="26" oninput="itemSet('${kind}',${i},'n',this.value)"></label><button class="chip" onclick="itemDel('${kind}',${i})">${CE === x.id ? 'Tap again' : '✕'}</button></div>`).join('')}
+   <div class="row mt"><button class="btn g" onclick="itemAdd('${kind}')">+ Add</button></div>`;
+}
+function vSettings() {
+  const c = S.cfg; let theme = 'auto'; try { theme = localStorage.getItem('cm_theme') || 'auto'; } catch (e) { }
+  return coachStrip() + `<div class="card"><h2>Settings</h2>
+   <div class="row mt"><label>Name (for the GP summary)<input id="s-name" value="${esc(c.name)}" maxlength="24"></label></div>
+   <div class="row mt"><label>Usual cycle length (until you have one)<input id="s-cyc" type="number" inputmode="numeric" value="${c.defCycle}"></label><label>Usual period length<input id="s-per" type="number" inputmode="numeric" value="${c.defPeriod}"></label></div>
+   <div class="row mt"><label>Days from ovulation to period<input id="s-lut" type="number" inputmode="numeric" value="${c.luteal}"></label></div>
+   <div class="mu sm mt">14 is the textbook figure for the gap between ovulation and your next period. If you track ovulation (tests or temperature), set your own.</div>
+   <label class="mt" style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink)"><input id="s-hc" type="checkbox" style="width:auto" ${c.hc ? 'checked' : ''}> I use hormonal contraception (hides the natural hormone curve)</label>
+   ${SERR ? `<div class="bad mt" role="alert">${esc(SERR)}</div>` : ''}<div class="row mt"><button class="btn" onclick="saveCfg()">Save</button></div></div>
+  <div class="card"><h3>Food groups</h3><div class="mu sm">The groups you tick each day. Rename, add or remove any.</div>${listEditor('foods', S.foods)}</div>
+  <div class="card"><h3>Other things</h3><div class="mu sm">Anything else you want checked against how you feel.</div>${listEditor('tags', S.tags)}</div>
+  <div class="card"><h3>Medication</h3><div class="mu sm">Each one gets a daily dose on the Today tab. "Step" is the dose change the analysis reports per.</div>
+   ${S.meds.map((m, i) => `<div class="row mt"><label style="flex:2 1 120px">Name<input value="${esc(m.n)}" maxlength="26" oninput="medSet(${i},'n',this.value)"></label><label style="flex:0 0 64px">Unit<input value="${esc(m.u)}" maxlength="6" oninput="medSet(${i},'u',this.value)"></label><label style="flex:0 0 70px">Step<input type="number" inputmode="decimal" value="${m.step}" oninput="medSet(${i},'step',this.value)"></label><button class="chip" onclick="medDel(${i})">${CE === m.id ? 'Tap again' : '✕'}</button></div>`).join('')}
+   <div class="row mt"><button class="btn g" onclick="medAdd()">+ Add a medicine</button></div></div>
+  ${notesCard()}${dataCard()}${supportCard(true)}
+  <div class="card"><h3>Appearance</h3><div class="row mt">${['auto', 'light', 'dark'].map(t => chip(`setTheme('${t}')`, t[0].toUpperCase() + t.slice(1), theme === t, '')).join('')}</div></div>
+  <div class="card"><h3>About</h3><div class="mu sm">Cycle Matrix organises your own daily ratings; it doesn't diagnose. The symptom list follows the 11 DSM-5 PMDD symptom areas, rated 1–6 like the standard daily record used in PMDD assessment, and the pattern check follows the published C-PASS criteria. Period and ovulation dates are estimates from your past cycles and aren't reliable for contraception. The hormone curve is the typical textbook pattern, not your levels. Your data stays in this browser unless you export it.</div></div>
+  <details class="card" ${DT ? 'open' : ''} ontoggle="DT=this.open"><summary>Developer tools</summary><div class="mu mt">For testing. Ordinary use never needs these.</div>
+   <div class="row mt"><button class="btn g" onclick="loadDemo()">${RST === 'demo' ? 'Tap again to replace my data' : 'Load sample data'}</button><button class="btn g" onclick="resetAll()">${RST === 'reset' ? 'Tap again to delete everything' : 'Reset all'}</button></div></details>`;
+}
+
+function notesCard() {
+  const q = PQ, ds_ = q ? Object.keys(q.days).sort() : [];
+  const desc = d => { const o = q.days[d], bits = []; if (q.starts.includes(d)) bits.push('<b>period start</b>'); if (o.fl && !q.starts.includes(d)) bits.push('bleeding'); const rs = Object.keys(o.r); if (rs.length) bits.push(rs.map(k => (ITEMS.concat(EXTRA).find(i => i.k === k) || { n: k }).n.toLowerCase() + ' ' + o.r[k]).join(', ')); if (o.md) bits.push('mood ' + o.md); Object.keys(o.dz).forEach(k => bits.push(k + ' ' + o.dz[k] + ' mg')); o.ev.forEach(e => bits.push(e)); return bits.join(' · '); };
+  return `<div class="card"><h3>Import from notes</h3><div class="mu sm">Paste a diary or a summary (like one from another app or chat). I'll pick out period dates, symptoms, mood and medication changes on dated lines, and skip predictions, advice and future dates. Dates are read day first (17/09/2026). Symptom ratings worked out from words are marked as estimates.</div>
+   <textarea id="ptx" class="csvbox" style="height:150px" placeholder="Previous Period: Started 17/09/2026, ending ~22/09&#10;24/09/2026: negative thoughts, headache, crying, back pain&#10;Sertraline 100mg on 04/10/2026">${esc(PT)}</textarea>
+   <div class="row mt"><button class="btn" onclick="readNotes()">Read my notes</button>${q ? '<button class="btn g" onclick="PQ=null;render()">Clear</button>' : ''}</div>
+   ${q ? (ds_.length ? `<div class="note"><b>Found ${plural(ds_.length, 'day')}${q.starts.length ? `, ${plural(q.starts.length, 'period start')}` : ''}${q.meds.length ? `, medication: ${q.meds.join(', ')}` : ''}.</b>${q.stoppedAt ? `<div class="mu sm">Stopped reading at "${esc(q.stoppedAt)}" (predictions and advice aren't entries).</div>` : ''}${q.future ? `<div class="mu sm">Skipped ${plural(q.future, 'future date')}.</div>` : ''}</div>
+     <div class="mt">${ds_.map(d => `<div class="meal"><span style="white-space:nowrap">${shortD(d)}</span><span class="sm" style="text-align:right">${desc(d)}</span></div>`).join('')}</div>
+     <div class="row mt"><button class="btn" onclick="addNotes()">Add these to my data</button></div><div class="mu sm">Only fills gaps: anything you've already entered for a day stays as it is.</div>` : '<div class="warnbox">No dated entries found. Dates need to look like 17/09/2026 or 17/09.</div>') : ''}</div>`;
+}
+/* ---------- ACTIONS ---------- */
+const say = m => { MSG = m; };
+function go(v) { V = v; SERR = ''; IMPQ = null; IMPERR = ''; CSVT = ''; DNOTE = ''; RST = 0; CE = null; render(); scrollTo(0, 0); }
+const goDay = n => { const d = sh(TD, n); if (d <= ds(0)) { TD = d; render(); } };
+const calNav = n => { const m = CALM || ds(0).slice(0, 7), t = +m.slice(0, 4) * 12 + (+m.slice(5) - 1) + n; CALM = Math.floor(t / 12) + '-' + String(t % 12 + 1).padStart(2, '0'); render(); };
+function rate(k, v) { const x = dayOf(TD); if (x.r[k] === v) delete x.r[k]; else x.r[k] = v; save(); if (k === 'sui' && v >= SAFE_SHOW) say(''); render(); }
+function setMood(v) { const x = dayOf(TD); x.md = x.md === v ? null : v; save(); render(); }
+function setFlow(i) {
+  const x = dayOf(TD); x.fl = i; let added = false;
+  if (i >= 2 && !S.starts.includes(TD) && !S.starts.some(s => s < TD && dd(s, TD) <= 10) && !S.starts.some(s => s > TD && dd(TD, s) <= 3)) { S.starts.push(TD); S.starts.sort(); added = true; }
+  save(); say(added ? `Logged ${shortD(TD)} as the start of a period. Tap the period button to undo if it wasn't.` : ''); render();
+}
+function toggleStart() { if (S.starts.includes(TD)) S.starts = S.starts.filter(s => s !== TD); else { S.starts.push(TD); S.starts.sort(); const x = dayOf(TD); if (!x.fl) x.fl = 3; } save(); say(S.starts.includes(TD) ? 'Period start logged. Predictions updated.' : 'Removed.'); render(); }
+function addStart() { const v = $('#addst').value; if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || v > ds(0)) return; if (!S.starts.includes(v)) { S.starts.push(v); S.starts.sort(); } save(); say(`Added ${prettyY(v)}.`); render(); }
+function delStart(s) { S.starts = S.starts.filter(x => x !== s); save(); render(); }
+function toggleFood(id) { const x = dayOf(TD); if (!x.fd) x.fd = {}; if (x.fd[id]) delete x.fd[id]; else x.fd[id] = 1; save(); render(); }
+function noFood() { const x = dayOf(TD); x.fd = x.fd != null && !Object.keys(x.fd).length ? null : {}; save(); render(); }
+function togglePain(k) { const x = dayOf(TD); if (!x.pl) x.pl = {}; if (x.pl[k]) delete x.pl[k]; else x.pl[k] = 1; save(); render(); }
+function noPain() { const x = dayOf(TD); x.pl = x.pl != null && !Object.keys(x.pl).length ? null : {}; save(); render(); }
+function toggleTag(id) { const x = dayOf(TD); if (x.tg[id]) delete x.tg[id]; else x.tg[id] = 1; save(); render(); }
+function setSleep(v) { const n = parseFloat(v); dayOf(TD).sl = n > 0 && n <= 24 ? n : null; save(); }
+function setNote(v) { dayOf(TD).nt = String(v).slice(0, 200); save(); }
+function sameAsYesterday() { const y = S.days[sh(TD, -1)]; if (!y || !Object.keys(y.r).length) { say('Nothing rated yesterday to copy.'); return render(); } const x = dayOf(TD); Object.keys(y.r).forEach(k => { if (k !== 'sui') x.r[k] = y.r[k]; }); save(); say('Copied yesterday\'s ratings. Change any that are different.'); render(); }
+function fillRest() { const x = dayOf(TD); let n = 0; ITEMS.forEach(i => { if (x.r[i.k] == null) { x.r[i.k] = 1; n++; } }); save(); say(n ? `Set ${n} unrated ${n === 1 ? 'item' : 'items'} to 1 (not at all).` : 'Everything is already rated.'); render(); }
+function saveCfg() {
+  const g = i => $('#' + i), n = i => parseFloat(g(i).value), lut = Math.round(n('s-lut')), cyc = Math.round(n('s-cyc')), per = Math.round(n('s-per'));
+  if (!(lut >= 9 && lut <= 17)) { SERR = 'Days from ovulation to period is usually 10–16. Use a number from 9 to 17.'; return render(); }
+  if (!(cyc >= 18 && cyc <= 50) || !(per >= 1 && per <= 10)) { SERR = 'Cycle length 18–50 days and period length 1–10 days, please.'; return render(); }
+  Object.assign(S.cfg, { name: g('s-name').value.trim().slice(0, 24), luteal: lut, defCycle: cyc, defPeriod: per, hc: g('s-hc').checked }); SERR = ''; save(); say('Saved.'); render();
+}
+function itemSet(kind, i, f, v) { S[kind][i][f] = f === 'i' ? v.slice(0, 4) : v.slice(0, 26); save(); }
+function itemAdd(kind) { S[kind].push({ id: (kind === 'foods' ? 'f_' : 't_') + uid(), n: 'New', i: '•' }); save(); render(); }
+function itemDel(kind, i) { const x = S[kind][i]; if (CE !== x.id) { CE = x.id; return render(); } CE = null; S[kind].splice(i, 1); Object.values(S.days).forEach(d => { if (kind === 'foods' && d.fd) delete d.fd[x.id]; if (kind === 'tags') delete d.tg[x.id]; }); save(); render(); }
+function setDose(mid, v) { const x = dayOf(TD), n = v === '' || v == null ? null : +v; if (n == null || !isFinite(n) || n < 0) delete x.dz[mid]; else if (x.dz[mid] === n && typeof v === 'number') delete x.dz[mid]; else x.dz[mid] = Math.round(n * 100) / 100; save(); render(); }
+function confirmIm() { const x = dayOf(TD); x.im = 0; save(); say('Thanks. That day now counts as your own ratings.'); render(); }
+function medSet(i, f, v) { S.meds[i][f] = f === 'step' ? Math.max(0.1, +v || 25) : String(v).slice(0, f === 'u' ? 6 : 26); save(); }
+function medAdd() { S.meds.push({ id: 'm_' + uid(), n: 'New medicine', u: 'mg', step: 25 }); save(); render(); }
+function medDel(i) { const m = S.meds[i]; if (CE !== m.id) { CE = m.id; return render(); } CE = null; S.meds.splice(i, 1); Object.values(S.days).forEach(d => { if (d.dz) delete d.dz[m.id]; }); save(); render(); }
+function readNotes() { PT = $('#ptx').value; try { PQ = parseNotes(PT); } catch (e) { PQ = { days: {}, starts: [], meds: [], future: 0 }; } render(); }
+function addNotes() { if (!PQ) return; const r = mergeIn(PQ); PQ = null; PT = ''; save(); say(`Added ${plural(r.days, 'new day')}, ${plural(r.starts, 'period start')}, ${plural(r.ratings, 'rating')}${r.events ? ', ' + plural(r.events, 'medication change') : ''}${r.doses ? ', ' + plural(r.doses, 'dose') : ''}.`); render(); }
+function setTheme(t) { try { localStorage.setItem('cm_theme', t); } catch (e) { } applyTheme(); render(); }
+function applyTheme() { let t = 'auto'; try { t = localStorage.getItem('cm_theme') || 'auto'; } catch (e) { } if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
+function resetAll() { if (RST !== 'reset') { RST = 'reset'; return render(); } RST = 0; try { localStorage.removeItem(KEY); } catch (e) { } S = newState(); _c = {}; save(); V = 'today'; TD = ds(0); say('Cleared.'); render(); }
+/* sample data: ~5 cycles with a clear PMDD pattern. Built-in effects so you can see the analysis work:
+   caffeine adds same-day anxiety; alcohol adds next-day symptoms; sugar is only craved premenstrually and has no effect of its own;
+   sertraline is taken at higher doses in the second half of the cycle, and each extra 25 mg lowers mood/behaviour ratings by 0.35. */
+function loadDemo() {
+  if (RST !== 'demo') { RST = 'demo'; return render(); } RST = 0; let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  S = newState(); _c = {}; S.cfg.name = 'Sample'; const N = 150, from = ds(-N); let s = sh(from, 3); const starts = []; while (s <= ds(-2)) { starts.push(s); s = sh(s, ri(27, 31)); } S.starts = starts; _c = {};
+  let alcY = false;
+  for (let i = 0; i <= N; i++) { const d = sh(from, i); if (rnd() < 0.07 && d !== ds(0)) { alcY = false; continue; } const w = where(d), x = dayOf(d); if (!w) continue; const pre = w.ph === 'pre' || (w.ph === 'lut' && w.until <= 9), early = w.cd >= 4 && w.cd <= 12;
+    const caf = rnd() < 0.5, alc = rnd() < 0.22, sug = rnd() < (pre ? 0.75 : 0.2); x.fd = {}; if (caf) x.fd.f_caf = 1; if (alc) x.fd.f_alc = 1; if (sug) x.fd.f_sug = 1; ['f_veg', 'f_fru', 'f_who', 'f_dai', 'f_ref'].forEach(f => { if (rnd() < 0.55) x.fd[f] = 1; });
+    const base = pre ? 4.3 : early ? 1.4 : 1.8, bump = alcY ? 0.8 : 0, dose = (w.ph === 'lut' || w.ph === 'pre') ? (rnd() < 0.5 ? 100 : 75) : (rnd() < 0.5 ? 50 : 75); x.dz.m_ser = dose; ITEMS.forEach(it => { let v = base + bump + (rnd() - 0.5) * 1.2 + (it.g === 'emo' || it.g === 'beh' ? -(dose - 75) / 25 * 0.35 : 0); if (it.g === 'phy') v = (pre ? 3.6 : 1.5) + (rnd() - 0.5); if (it.g === 'imp') v = (pre ? 4 : 1.3) + (rnd() - 0.5); if (it.k === 'anx' && caf) v += 1.0; x.r[it.k] = clamp(Math.round(v), 1, early ? 3 : 6); });
+    x.r.crm = w.ph === 'men' ? ri(3, 5) : 1; x.r.sui = 1;
+    FIB.forEach(it => { x.r[it.k] = clamp(Math.round((pre ? 3.4 : 1.9) + (rnd() - 0.5) * 1.6), 1, 6); }); x.pl = {}; REGIONS.forEach(([k]) => { if (rnd() < (pre ? 0.4 : 0.12)) x.pl[k] = 1; }); x.md = clamp(Math.round((pre ? 2.1 : 3.8) - bump * 0.6 + (rnd() - 0.5) * 1.2), 1, 5); x.fl = w.ph === 'men' && w.cd <= 5 ? [3, 4, 3, 2, 1][w.cd - 1] : 0;
+    if (rnd() < 0.3) x.tg.t_ex = 1; if (pre && rnd() < 0.4) x.tg.t_bs = 1; alcY = alc;}
+  dayOf(sh(starts[starts.length - 2], -12)).ev = ['Sertraline increased'];
+  say('Sample data: about five cycles with a clear premenstrual pattern.'); save(); V = 'today'; TD = ds(0); render();
+}
+
+/* ---------- EXPORT / IMPORT ---------- */
+const csvCell = v => { v = v == null ? '' : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+function buildCSV() {
+  const R = [], sec = (n, h, d) => { R.push(['## ' + n]); R.push(h); d.forEach(r => R.push(r)); R.push([]); }, c = S.cfg, keys = ALLK;
+  sec('about', ['key', 'value'], [['format', 'cycle-matrix-export-v1'], ['exported', ds(0)], ['scale', 'symptoms 1-6 (1 not at all, 6 extreme); mood 1-5; flow 0 none to 4 heavy'], ['how to restore', 'Cycle Matrix > Settings > Your data > Import a spreadsheet']]);
+  sec('settings', ['key', 'value'], [['name', c.name], ['luteal', c.luteal], ['defCycle', c.defCycle], ['defPeriod', c.defPeriod], ['hc', c.hc ? 1 : 0], ['created', S.created], ['lastExport', S.lastExport || '']]);
+  sec('food_groups', ['id', 'name', 'icon'], S.foods.map(f => [f.id, f.n, f.i])); sec('other_things', ['id', 'name', 'icon'], S.tags.map(t => [t.id, t.n, t.i]));
+  sec('medications', ['id', 'name', 'unit', 'step'], S.meds.map(m => [m.id, m.n, m.u, m.step]));
+  sec('period_starts', ['date'], S.starts.map(s => [s]));
+  sec('days', ['date', 'flow', 'mood', 'sleep_hours', 'food_logged', 'food_groups', 'other_things', 'note', 'estimated', 'events', 'pain_logged', 'pain_areas'].concat(keys).concat(S.meds.map(m => 'dose:' + m.id)), Object.keys(S.days).sort().filter(d => checkedIn(d) || S.days[d].nt || Object.keys(S.days[d].tg).length || S.days[d].sl != null || S.days[d].ev.length || S.days[d].pl != null).map(d => { const x = S.days[d]; return [d, x.fl, x.md == null ? '' : x.md, x.sl == null ? '' : x.sl, x.fd != null ? 1 : 0, x.fd ? Object.keys(x.fd).join(';') : '', Object.keys(x.tg).join(';'), x.nt, x.im ? 1 : 0, x.ev.join(';'), x.pl != null ? 1 : 0, x.pl ? Object.keys(x.pl).join(';') : ''].concat(keys.map(k => x.r[k] == null ? '' : x.r[k])).concat(S.meds.map(m => x.dz[m.id] == null ? '' : x.dz[m.id])); }));
+  return '\ufeff' + R.map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+}
+function parseCSV(t) {
+  t = t.replace(/^(\ufeff|ï»¿)+/, ''); const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) { const ch = t[i]; if (q) { if (ch === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; } else if (ch === '"') q = true; else if (ch === ',') { row.push(f); f = ''; } else if (ch === '\n' || ch === '\r') { if (ch === '\r' && t[i + 1] === '\n') i++; row.push(f); f = ''; rows.push(row); row = []; } else f += ch; }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); } return rows;
+}
+function sections(text) { const s = {}; let cur = null, head = false; parseCSV(text).forEach(r => { if (r[0] && r[0].startsWith('## ') && r.slice(1).every(x => x === '')) { cur = r[0].slice(3).trim(); s[cur] = { head: null, rows: [] }; head = true; return; } if (!cur || r.every(x => x === '')) return; if (head) { s[cur].head = r; head = false; return; } s[cur].rows.push(r); }); return s; }
+const nd = x => { x = String(x == null ? '' : x).trim(); let m = x.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`; m = x.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{2,4})$/); if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; return x; };
+function csvToState(text) {
+  const s = sections(text); if (!s.settings || !s.days) throw new Error('missing'); const kv = {}; s.settings.rows.forEach(r => { kv[r[0]] = r[1]; }); const num = x => x === '' || x == null || isNaN(+x) ? null : +x;
+  const lst = sec => (s[sec] ? s[sec].rows : []).map(r => ({ id: r[0], n: r[1], i: r[2] })), head = s.days.head || [];
+  const raw = { cfg: { name: kv.name, luteal: num(kv.luteal), defCycle: num(kv.defCycle), defPeriod: num(kv.defPeriod), hc: kv.hc === '1' }, created: kv.created ? nd(kv.created) : null, lastExport: kv.lastExport ? nd(kv.lastExport) : null, foods: lst('food_groups'), tags: lst('other_things'), starts: (s.period_starts ? s.period_starts.rows : []).map(r => nd(r[0])), days: {} };
+  const H = Object.fromEntries(head.map((h, i) => [h, i])), col = (r, k) => H[k] != null ? r[H[k]] : '';
+  raw.meds = (s.medications ? s.medications.rows : []).map(r => ({ id: r[0], n: r[1], u: r[2], step: num(r[3]) }));
+  s.days.rows.forEach(r => { const o = { fl: num(col(r, 'flow')) || 0, md: num(col(r, 'mood')), sl: num(col(r, 'sleep_hours')), fd: col(r, 'food_logged') === '1' ? Object.fromEntries(String(col(r, 'food_groups') || '').split(';').filter(Boolean).map(k => [k, 1])) : null,
+      tg: Object.fromEntries(String(col(r, 'other_things') || '').split(';').filter(Boolean).map(k => [k, 1])), nt: col(r, 'note') || '', im: col(r, 'estimated') === '1' ? 1 : 0, ev: String(col(r, 'events') || '').split(';').filter(Boolean), pl: col(r, 'pain_logged') === '1' ? Object.fromEntries(String(col(r, 'pain_areas') || '').split(';').filter(Boolean).map(k => [k, 1])) : null, r: {}, dz: {} };
+    ALLK.forEach(k => { const v = num(col(r, k)); if (v != null) o.r[k] = v; }); head.forEach((h, i) => { if (h.startsWith('dose:')) { const v = num(r[i]); if (v != null) o.dz[h.slice(5)] = v; } }); raw.days[nd(col(r, 'date'))] = o; });
+  const g = migrate(raw); if (!g) throw new Error('bad'); return g;
+}
+function exportCSV() {
+  S.lastExport = ds(0); save(); CSVT = buildCSV();
+  try { const u = URL.createObjectURL(new Blob([CSVT], { type: 'text/csv;charset=utf-8' })), a = document.createElement('a'); a.href = u; a.download = 'cycle-matrix-' + ds(0) + '.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 3000); DNOTE = 'Spreadsheet exported. It holds health information, so keep it somewhere private.'; } catch (e) { DNOTE = 'Your browser blocked the download. Copy the text below into a file called cycle-matrix.csv.'; } render();
+}
+function importFile(inp) { const f = inp.files && inp.files[0]; if (!f) return; IMPQ = null; IMPERR = ''; const fr = new FileReader(); fr.onload = () => { try { IMPQ = csvToState(String(fr.result)); } catch (e) { IMPERR = "That file isn't a Cycle Matrix export."; } render(); }; fr.onerror = () => { IMPERR = "Couldn't read that file."; render(); }; fr.readAsText(f); }
+function mergeImport() { if (!IMPQ) return; const r = mergeIn(IMPQ); IMPQ = null; IMPERR = ''; save(); say(`Added ${plural(r.days, 'new day')} and ${plural(r.starts, 'period start')}; filled ${plural(r.ratings, 'missing rating')}.`); render(); }
+function applyImport() { if (!IMPQ) return; S = IMPQ; _c = {}; IMPQ = null; IMPERR = ''; say('Restored. Right where we left off.'); save(); V = 'today'; TD = ds(0); render(); scrollTo(0, 0); }
+function dataCard() {
+  const q = IMPQ ? `<div class="note"><b>Found ${plural(Object.keys(IMPQ.days).length, 'day')} and ${plural(IMPQ.starts.length, 'period start')}.</b><div class="row mt"><button class="btn" onclick="mergeImport()">Add to my data</button><button class="btn g" onclick="applyImport()">Replace my data</button><button class="btn g" onclick="IMPQ=null;render()">Cancel</button></div><div class="mu sm">"Add" only fills gaps and keeps what you have. "Replace" swaps everything for the file.</div></div>` : '', last = S.lastExport, since = last ? dd(last, ds(0)) : null;
+  return `<div class="card"><h3>Your data</h3><div class="mu">Everything stays in this browser. Back it up as a spreadsheet now and then (it holds health information, so keep the file private).</div>
+   ${since == null ? '<div class="warnbox">You haven\'t backed up yet.</div>' : since > 30 ? `<div class="warnbox">Last backup was ${since} days ago.</div>` : `<div class="note">Last backup: ${prettyY(last)}.</div>`}<div class="row mt"><button class="btn" onclick="exportCSV()">Export spreadsheet (CSV)</button></div>
+   ${DNOTE ? `<div class="note" role="status">${esc(DNOTE)}</div>` : ''}${CSVT ? `<textarea class="csvbox" readonly aria-label="Exported spreadsheet text" onfocus="this.select()">${esc(CSVT)}</textarea>` : ''}
+   <div class="mt"><label>Import a Cycle Matrix spreadsheet<input type="file" accept=".csv,text/csv" onchange="importFile(this)"></label></div>${IMPERR ? `<div class="bad mt" role="alert">${esc(IMPERR)}</div>` : ''}${q}</div>`;
+}
+
+/* ---------- shell ---------- */
+function render() {
+  const T = [['today', '📅', 'Today'], ['cycle', '🌙', 'Cycle'], ['patterns', '🧩', 'Patterns'], ['trends', '📈', 'Trends'], ['food', '🥗', 'Food'], ['meds', '💊', 'Meds'], ['settings', '⚙️', 'Settings']], cur = V === 'report' ? 'patterns' : V;
+  $('#nav').innerHTML = T.map(t => `<button class="${cur === t[0] ? 'on' : ''}" ${cur === t[0] ? 'aria-current="page"' : ''} onclick="go('${t[0]}')"><span>${t[1]}</span>${t[2]}</button>`).join('');
+  $('#app').innerHTML = { today: vToday, cycle: vCycle, patterns: vPatterns, food: vFood, trends: vTrends, meds: vMeds, report: vReport, settings: vSettings }[V]();
+}
+
+/* ---------------------------------------------------------------------
+   14. BOOT
+   --------------------------------------------------------------------- */
+try { applyTheme(); } catch (e) { }
+S = load() || newState();
+render();
+
+</script></body></html>
